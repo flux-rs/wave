@@ -1,5 +1,12 @@
 # WaVe: a verifiably secure WebAssembly sandboxing runtime
 
+
+| :exclamation: This is a port of the original WaVe, which was originally verified with Prusti to Flux.  |
+|-----------------------------------------|
+
+| :warning:  Do not use this repo, it is only meant to be used as a test harness for Flux. |
+|-----------------------------------------|
+
 This repository contains all the code and data necessary for building WaVe and reproducing the results presented in our paper [WaVe: a verifiably secure WebAssembly sandboxing runtime](https://cseweb.ucsd.edu/~dstefan/pubs/johnson:2023:wave.pdf)).  
   
 ## Abstract
