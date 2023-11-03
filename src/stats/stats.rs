@@ -1,4 +1,4 @@
-#![flux::ignore]
+#![cfg_attr(flux, flux::ignore)]
 
 use crate::stats::timing::{ResultsType, HOSTCALL_RESULTS, SYSCALL_RESULTS};
 use statistical::mean;

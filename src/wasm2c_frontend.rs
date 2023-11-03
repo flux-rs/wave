@@ -28,10 +28,11 @@ use crate::stats::noop_instrumentation::output_syscall_perf_results;
 use crate::stats::stats::output_hostcall_perf_results;
 #[cfg(feature = "time_syscalls")]
 use crate::stats::stats::output_syscall_perf_results;
+use flux_rs::*;
 
 trace::init_depth_var!();
 
-#[flux::trusted]
+#[trusted]
 pub fn create_ctx(
     memptr: *mut u8, // FLUX-TODO2: have to mark "trusted" because of the pointer
     homedir: &str,
@@ -86,7 +87,7 @@ pub fn create_ctx(
     }
 }
 
-#[flux::trusted]
+#[trusted]
 fn to_raw(mem: &Vec<u8>) -> usize {
     mem.as_ptr() as usize
 }
@@ -96,7 +97,7 @@ fn to_raw(mem: &Vec<u8>) -> usize {
 /// TODO: depulicate with fresh_ctx()
 /// TODO: clean up this function, make some helpers, etc
 /// scary
-#[flux::trusted]
+#[trusted]
 fn ctx_from_memptr(
     memptr: *mut u8,
     memsize: isize,
@@ -141,7 +142,7 @@ pub extern "C" fn wave_init(
 }
 
 #[no_mangle]
-#[flux::trusted]
+#[trusted]
 pub extern "C" fn wave_cleanup(ctx: *const *mut VmCtx) {
     output_hostcall_perf_results();
     output_syscall_perf_results();

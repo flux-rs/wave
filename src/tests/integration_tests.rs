@@ -1,4 +1,4 @@
-#![flux::ignore]
+#![cfg_attr(flux, flux::ignore)]
 
 use regex::Regex;
 use std::path::Path;

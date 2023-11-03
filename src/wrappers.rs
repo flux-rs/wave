@@ -8,6 +8,7 @@ use crate::tcb::misc::{
 use crate::types::RuntimeError::*;
 use crate::types::*;
 use crate::unwrap_result;
+use flux_rs::*;
 use std::convert::TryFrom;
 
 // TODO: support arbitrary *at calls
@@ -27,7 +28,7 @@ use std::convert::TryFrom;
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &strg VmCtx[@cx], v_dir_fd: u32, dirflags: u32, pathname: u32, path_len: u32, oflags: u32, fdflags: i32) -> Result<u32, RuntimeError> ensures ctx: VmCtx)]
+#[sig(fn (ctx: &strg VmCtx[@cx], v_dir_fd: u32, dirflags: u32, pathname: u32, path_len: u32, oflags: u32, fdflags: i32) -> Result<u32, RuntimeError> ensures ctx: VmCtx)]
 pub fn wasi_path_open(
     ctx: &mut VmCtx,
     v_dir_fd: u32,
@@ -72,7 +73,7 @@ pub fn wasi_path_open(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &strg VmCtx[@dummy], v_fd: u32) -> Result<u32, RuntimeError> ensures ctx: VmCtx)]
+#[sig(fn (ctx: &strg VmCtx[@dummy], v_fd: u32) -> Result<u32, RuntimeError> ensures ctx: VmCtx)]
 pub fn wasi_fd_close(ctx: &mut VmCtx, v_fd: u32) -> Result<u32, RuntimeError> {
     // can't  replace with fd_to_native until we fix question mark operator
     if v_fd >= MAX_SBOX_FDS {
@@ -104,7 +105,7 @@ pub fn wasi_fd_close(ctx: &mut VmCtx, v_fd: u32) -> Result<u32, RuntimeError> {
 //     pub iov_len: u32,
 // }
 
-#[flux::sig(fn (ctx: &mut VmCtx[@d], v_fd: u32, iovs: u32, iovcnt: u32) -> Result<u32, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@d], v_fd: u32, iovs: u32, iovcnt: u32) -> Result<u32, RuntimeError>)]
 pub fn wasi_fd_read(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -124,7 +125,7 @@ pub fn wasi_fd_read(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 
-#[flux::sig(fn (ctx: &mut VmCtx[@d], v_fd: u32, iovs: u32, iovcnt: u32) -> Result<u32, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@d], v_fd: u32, iovs: u32, iovcnt: u32) -> Result<u32, RuntimeError>)]
 pub fn wasi_fd_write(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -261,7 +262,7 @@ pub fn wasi_fd_fdstat_get(ctx: &VmCtx, v_fd: u32) -> RuntimeResult<FdStat> {
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // can only adjust Fdflags using set_flags, not O_flags or any other flags
-#[flux::sig(fn(ctx: &mut VmCtx[@dummy], v_fd: u32, v_flags: u32) -> Result<(), RuntimeError>)]
+#[sig(fn(ctx: &mut VmCtx[@dummy], v_fd: u32, v_flags: u32) -> Result<(), RuntimeError>)]
 pub fn wasi_fd_fdstat_set_flags(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -316,7 +317,7 @@ pub fn wasi_fd_filestat_set_size(ctx: &VmCtx, v_fd: u32, size: i64) -> RuntimeRe
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn(ctx: &mut VmCtx[@dummy], v_fd: u32, v_atim: u64, v_mtim: u64, v_fst_flags: u32) -> Result<(), RuntimeError>)]
+#[sig(fn(ctx: &mut VmCtx[@dummy], v_fd: u32, v_atim: u64, v_mtim: u64, v_fst_flags: u32) -> Result<(), RuntimeError>)]
 pub fn wasi_fd_filestat_set_times(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -345,7 +346,7 @@ pub fn wasi_fd_filestat_set_times(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@dummy], v_fd: u32, iovs: u32, iovcnt: u32, offset: u64) -> Result<u32, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@dummy], v_fd: u32, iovs: u32, iovcnt: u32, offset: u64) -> Result<u32, RuntimeError>)]
 pub fn wasi_fd_pread(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -398,7 +399,7 @@ pub fn wasi_prestat_dirname(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn(ctx: &mut VmCtx[@dummy], v_fd: u32) -> Result<u32, RuntimeError>)]
+#[sig(fn(ctx: &mut VmCtx[@dummy], v_fd: u32) -> Result<u32, RuntimeError>)]
 pub fn wasi_fd_prestat_get(ctx: &mut VmCtx, v_fd: u32) -> Result<u32, RuntimeError> {
     if v_fd == HOMEDIR_FD {
         return Ok(ctx.homedir.len() as u32);
@@ -412,7 +413,7 @@ pub fn wasi_fd_prestat_get(ctx: &mut VmCtx, v_fd: u32) -> Result<u32, RuntimeErr
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@dummy], v_fd: u32, iovs: u32, iovcnt: u32, offset: u64) -> Result<u32, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@dummy], v_fd: u32, iovs: u32, iovcnt: u32, offset: u64) -> Result<u32, RuntimeError>)]
 pub fn wasi_fd_pwrite(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -437,7 +438,7 @@ pub fn wasi_fd_pwrite(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 
-#[flux::sig(fn(ctx: &mut VmCtx[@dummy], v_fd: u32, pathname: u32, path_len: u32) -> Result<(), RuntimeError>)]
+#[sig(fn(ctx: &mut VmCtx[@dummy], v_fd: u32, pathname: u32, path_len: u32) -> Result<(), RuntimeError>)]
 pub fn wasi_path_create_directory(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -638,7 +639,7 @@ pub fn wasi_path_link(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], v_fd: u32, pathname: u32, path_len: u32, ptr: u32, len: u32) -> Result<u32, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], v_fd: u32, pathname: u32, path_len: u32, ptr: u32, len: u32) -> Result<u32, RuntimeError>)]
 pub fn wasi_path_readlink(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -675,7 +676,7 @@ pub fn wasi_path_readlink(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], v_fd: u32, pathname: u32, path_len: u32) -> Result<(), RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], v_fd: u32, pathname: u32, path_len: u32) -> Result<(), RuntimeError>)]
 pub fn wasi_path_remove_directory(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -780,7 +781,7 @@ pub fn wasi_path_symlink(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@dummy], v_fd: u32, pathname: u32, path_len: u32) -> Result<(), RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@dummy], v_fd: u32, pathname: u32, path_len: u32) -> Result<(), RuntimeError>)]
 pub fn wasi_path_unlink_file(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -879,7 +880,7 @@ pub fn wasi_sched_yield(ctx: &VmCtx) -> RuntimeResult<()> {
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@dummy], ptr: u32, len: u32) -> Result<(), RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@dummy], ptr: u32, len: u32) -> Result<(), RuntimeError>)]
 pub fn wasi_random_get(ctx: &mut VmCtx, ptr: u32, len: u32) -> Result<(), RuntimeError> {
     if !ctx.fits_in_lin_mem(ptr, len) {
         return Err(Efault);
@@ -897,7 +898,7 @@ pub fn wasi_random_get(ctx: &mut VmCtx, ptr: u32, len: u32) -> Result<(), Runtim
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace))]
-#[flux::sig(fn (ctx: &mut VmCtx[@dummy], v_from: u32, v_to: u32) -> Result<(), RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@dummy], v_from: u32, v_to: u32) -> Result<(), RuntimeError>)]
 pub fn wasi_fd_renumber(ctx: &mut VmCtx, v_from: u32, v_to: u32) -> Result<(), RuntimeError> {
     if v_from >= MAX_SBOX_FDS || v_to >= MAX_SBOX_FDS {
         return Err(Ebadf);
@@ -913,7 +914,7 @@ pub fn wasi_fd_renumber(ctx: &mut VmCtx, v_from: u32, v_to: u32) -> Result<(), R
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace))]
-#[flux::sig(fn (ctx: &mut VmCtx[@dummy], argv: u32, argv_buf: u32) -> Result<(), RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@dummy], argv: u32, argv_buf: u32) -> Result<(), RuntimeError>)]
 pub fn wasi_args_get(ctx: &mut VmCtx, argv: u32, argv_buf: u32) -> Result<(), RuntimeError> {
     // 1. copy argv_buffer
     let argv_buf_len = usize_as_u32(ctx.arg_buffer.len()); // FLUX-TODO2 as-u32;
@@ -963,7 +964,7 @@ pub fn wasi_args_get(ctx: &mut VmCtx, argv: u32, argv_buf: u32) -> Result<(), Ru
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // // #[ensures(effects!(old(trace), trace))]
-#[flux::sig(fn (ctx: &mut VmCtx[@dummy], env: u32, env_buf: u32) -> Result<(), RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@dummy], env: u32, env_buf: u32) -> Result<(), RuntimeError>)]
 pub fn wasi_environ_get(ctx: &mut VmCtx, env: u32, env_buf: u32) -> Result<(), RuntimeError> {
     // 1. copy argv_buffer
     let env_buf_len = usize_as_u32(ctx.env_buffer.len()); // FLUX-TODO2: as-u32;
@@ -1034,7 +1035,7 @@ pub fn wasi_environ_sizes_get(ctx: &VmCtx) -> RuntimeResult<(u32, u32)> {
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@dummy], v_fd: u32, ri_data: u32, ri_data_count: u32, ri_flags: u32) -> Result<(u32, u32), RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@dummy], v_fd: u32, ri_data: u32, ri_data_count: u32, ri_flags: u32) -> Result<(u32, u32), RuntimeError>)]
 pub fn wasi_sock_recv(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -1076,7 +1077,7 @@ pub fn wasi_sock_recv(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], v_fd: u32, si_data: u32, si_data_count: u32, si_flags: u32) -> Result<u32, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], v_fd: u32, si_data: u32, si_data_count: u32, si_flags: u32) -> Result<u32, RuntimeError>)]
 pub fn wasi_sock_send(
     ctx: &mut VmCtx,
     v_fd: u32,
@@ -1117,7 +1118,7 @@ pub fn wasi_sock_send(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 
-#[flux::sig(fn (ctx: &VmCtx[@cx], v_fd: u32, v_how: u32) -> Result<(), RuntimeError>)]
+#[sig(fn (ctx: &VmCtx[@cx], v_fd: u32, v_how: u32) -> Result<(), RuntimeError>)]
 pub fn wasi_sock_shutdown(ctx: &VmCtx, v_fd: u32, v_how: u32) -> Result<(), RuntimeError> {
     let fd = ctx.fdmap.fd_to_native(v_fd)?;
     let how = SdFlags::new(v_how);
@@ -1218,7 +1219,7 @@ pub fn wasi_poll_oneoff(
 // #[ensures(trace_safe(trace, ctx))]
 // TODO: I'm not confident this works for multiple consecutive readdir calls to the same dir
 // Correct behavior: truncate final entry
-#[flux::sig(fn (ctx: &strg VmCtx[@dummy], v_fd: SboxFd, buf: SboxFd, buf_len: usize, cookie: u64) -> Result<u32, RuntimeError> ensures ctx: VmCtx)]
+#[sig(fn (ctx: &strg VmCtx[@dummy], v_fd: SboxFd, buf: SboxFd, buf_len: usize, cookie: u64) -> Result<u32, RuntimeError> ensures ctx: VmCtx)]
 pub fn wasi_fd_readdir(
     ctx: &mut VmCtx,
     v_fd: SboxFd,
@@ -1306,7 +1307,7 @@ pub fn wasi_fd_readdir(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &strg VmCtx[@dummy], domain: u32, ty: u32, protocol: u32) -> Result<u32, RuntimeError> ensures ctx: VmCtx)]
+#[sig(fn (ctx: &strg VmCtx[@dummy], domain: u32, ty: u32, protocol: u32) -> Result<u32, RuntimeError> ensures ctx: VmCtx)]
 pub fn wasi_socket(
     ctx: &mut VmCtx,
     domain: u32,
@@ -1346,7 +1347,7 @@ pub fn wasi_socket(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@dummy], sockfd: u32, addr: u32, addrlen: u32) -> Result<(), RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@dummy], sockfd: u32, addr: u32, addrlen: u32) -> Result<(), RuntimeError>)]
 pub fn wasi_sock_connect(
     ctx: &mut VmCtx,
     sockfd: u32,

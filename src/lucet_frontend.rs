@@ -1,5 +1,5 @@
 // C-FFI and ptr shenanigans
-#![flux::ignore]
+#![cfg_attr(flux, flux::ignore)]
 use crate::types::*;
 use crate::wasm2c_frontend::*;
 // use crate::wrappers::*;

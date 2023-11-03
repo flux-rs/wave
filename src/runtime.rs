@@ -7,12 +7,13 @@ use crate::{
     },
     types::*,
 };
+use flux_rs::*;
 use RuntimeError::*;
 
-#[flux::alias(type FitsBool(buf: int, cnt: int) = bool[fits_in_lin_mem(buf, cnt)])]
+#[alias(type FitsBool(buf: int, cnt: int) = bool[fits_in_lin_mem(buf, cnt)])]
 pub type FitsBool = bool;
 
-#[flux::alias(type FitsUsize(buf: int) = usize{cnt : fits_in_lin_mem(buf, cnt)})]
+#[alias(type FitsUsize(buf: int) = usize{cnt : fits_in_lin_mem(buf, cnt)})]
 pub type FitsUsize = usize;
 
 //#[ensures(safe(&result))]
@@ -64,19 +65,19 @@ pub fn fresh_ctx(homedir: String) -> VmCtx {
 impl VmCtx {
     /// Check whether sandbox pointer is actually inside the sandbox
     // TODO: can I eliminate this in favor os in_lin_mem_usize?
-    #[flux::sig(fn(&VmCtx, ptr:SboxPtr) -> bool[0 <= ptr && ptr < LINEAR_MEM_SIZE])]
+    #[sig(fn(&VmCtx, ptr:SboxPtr) -> bool[0 <= ptr && ptr < LINEAR_MEM_SIZE])]
     pub fn in_lin_mem(&self, ptr: SboxPtr) -> bool {
         (ptr as usize >= 0) && (ptr as usize) < self.memlen
     }
 
-    #[flux::sig(fn(&VmCtx, ptr:usize) -> bool[0 <= ptr && ptr < LINEAR_MEM_SIZE])]
+    #[sig(fn(&VmCtx, ptr:usize) -> bool[0 <= ptr && ptr < LINEAR_MEM_SIZE])]
     pub fn in_lin_mem_usize(&self, ptr: usize) -> bool {
         ptr >= 0 && ptr < self.memlen
     }
 
     /// Check whether buffer is entirely within sandbox
     // Can I eliminate this in favor of fits_in_lin_mem_usize
-    #[flux::sig(fn(&VmCtx, buf: SboxPtr, cnt:u32) -> FitsBool(buf, cnt))]
+    #[sig(fn(&VmCtx, buf: SboxPtr, cnt:u32) -> FitsBool(buf, cnt))]
     pub fn fits_in_lin_mem(&self, buf: SboxPtr, cnt: u32) -> FitsBool {
         let total_size = (buf as usize) + (cnt as usize);
         if total_size >= self.memlen {
@@ -85,7 +86,7 @@ impl VmCtx {
         self.in_lin_mem(buf) && self.in_lin_mem(cnt) && buf <= buf + cnt
     }
 
-    #[flux::sig(fn(&VmCtx, buf:usize, cnt:usize) -> FitsBool(buf, cnt))]
+    #[sig(fn(&VmCtx, buf:usize, cnt:usize) -> FitsBool(buf, cnt))]
     pub fn fits_in_lin_mem_usize(&self, buf: usize, cnt: usize) -> FitsBool {
         let total_size = buf + cnt;
         if total_size >= self.memlen {
@@ -95,7 +96,7 @@ impl VmCtx {
     }
 
     /// Copy buffer from sandbox to host
-    #[flux::sig(fn(&VmCtx, src:SboxPtr, n:u32{0 <= n && src + n < LINEAR_MEM_SIZE}) -> RVec<u8>[n])]
+    #[sig(fn(&VmCtx, src:SboxPtr, n:u32{0 <= n && src + n < LINEAR_MEM_SIZE}) -> RVec<u8>[n])]
     pub fn copy_buf_from_sandbox(&self, src: SboxPtr, n: u32) -> RVec<u8> {
         let mut host_buffer: RVec<u8> = RVec::from_elem_n(0, n as usize);
         // FLUX-TODO2: capacity: host_buffer.reserve_exact(n as usize);
@@ -106,7 +107,7 @@ impl VmCtx {
     }
 
     /// Copy buffer from from host to sandbox
-    #[flux::sig(fn(self: &mut VmCtx[@dummy], SboxPtr, &RVec<u8>, u32) -> Result<(), RuntimeError>)]
+    #[sig(fn(self: &mut VmCtx[@dummy], SboxPtr, &RVec<u8>, u32) -> Result<(), RuntimeError>)]
     pub fn copy_buf_to_sandbox(
         &mut self,
         dst: SboxPtr,
@@ -121,7 +122,7 @@ impl VmCtx {
     }
 
     /// Copy arg buffer from from host to sandbox
-    #[flux::sig(fn(&mut {VmCtx[@cx] | cx.arg_buf == n}, dst: SboxPtr, n:u32) -> Result<(), RuntimeError>)]
+    #[sig(fn(&mut {VmCtx[@cx] | cx.arg_buf == n}, dst: SboxPtr, n:u32) -> Result<(), RuntimeError>)]
     pub fn copy_arg_buffer_to_sandbox(&mut self, dst: SboxPtr, n: u32) -> Result<(), RuntimeError> {
         if !self.fits_in_lin_mem(dst, n) {
             return Err(Efault);
@@ -132,7 +133,7 @@ impl VmCtx {
     }
 
     /// Copy arg buffer from from host to sandbox
-    #[flux::sig(fn(&mut {VmCtx[@cx] | cx.env_buf == n}, dst: SboxPtr, n:u32) -> Result<(), RuntimeError>)]
+    #[sig(fn(&mut {VmCtx[@cx] | cx.env_buf == n}, dst: SboxPtr, n:u32) -> Result<(), RuntimeError>)]
     pub fn copy_environ_buffer_to_sandbox(
         &mut self,
         dst: SboxPtr,
@@ -146,7 +147,7 @@ impl VmCtx {
         Ok(())
     }
 
-    #[flux::sig(fn(&VmCtx[@cx], SboxPtr, u32, should_follow:bool, HostFd) -> Result<HostPathSafe(should_follow), RuntimeError>)]
+    #[sig(fn(&VmCtx[@cx], SboxPtr, u32, should_follow:bool, HostFd) -> Result<HostPathSafe(should_follow), RuntimeError>)]
     pub fn translate_path(
         &self,
         path: SboxPtr,
@@ -167,7 +168,7 @@ impl VmCtx {
         // self.homedir.as_bytes().to_vec()
     }
 
-    #[flux::sig(fn(&VmCtx, FitsUsize(2)) -> u16)]
+    #[sig(fn(&VmCtx, FitsUsize(2)) -> u16)]
     pub fn read_u16(&self, start: FitsUsize) -> u16 {
         let bytes: [u8; 2] = [self.mem[start], self.mem[start + 1]];
         u16::from_le_bytes(bytes)
@@ -175,7 +176,7 @@ impl VmCtx {
 
     /// read u32 from wasm linear memory
     // Not thrilled about this implementation, but it works
-    #[flux::sig(fn(&VmCtx, FitsUsize(4)) -> u32)]
+    #[sig(fn(&VmCtx, FitsUsize(4)) -> u32)]
     pub fn read_u32(&self, start: FitsUsize) -> u32 {
         let bytes: [u8; 4] = [
             self.mem[start],
@@ -189,7 +190,7 @@ impl VmCtx {
     /// read u64 from wasm linear memory
     // Not thrilled about this implementation, but it works
     // TODO: need to test different implementatiosn for this function
-    #[flux::sig(fn(&VmCtx, FitsUsize(8)) -> u64)]
+    #[sig(fn(&VmCtx, FitsUsize(8)) -> u64)]
     pub fn read_u64(&self, start: FitsUsize) -> u64 {
         let bytes: [u8; 8] = [
             self.mem[start],
@@ -216,7 +217,7 @@ impl VmCtx {
     }
 
     // TODO @cx is redundant here but due to https://github.com/liquid-rust/flux/issues/158
-    #[flux::sig(fn (&mut VmCtx[@cx], FitsUsize(1), v: u8))]
+    #[sig(fn (&mut VmCtx[@cx], FitsUsize(1), v: u8))]
     pub fn write_u8(&mut self, offset: FitsUsize, v: u8) {
         self.mem[offset] = v;
     }
@@ -231,7 +232,7 @@ impl VmCtx {
     // #[ensures(ctx_safe(self))]
     // #[ensures(trace_safe(trace, self))]
     // // #[ensures(effects!(old(trace), trace, effect!(WriteMem, addr, 2) if addr == start as usize))]
-    #[flux::sig(fn (&mut VmCtx[@cx], FitsUsize(2), v: u16))]
+    #[sig(fn (&mut VmCtx[@cx], FitsUsize(2), v: u16))]
     pub fn write_u16(&mut self, start: FitsUsize, v: u16) {
         let bytes: [u8; 2] = v.to_le_bytes();
         self.write_u8(start, bytes[0]);
@@ -248,7 +249,7 @@ impl VmCtx {
     // #[ensures(ctx_safe(self))]
     // #[ensures(trace_safe(trace, self))]
     // // #[ensures(effects!(old(trace), trace, effect!(WriteMem, addr, 4) if addr == start as usize))]
-    #[flux::sig(fn (&mut VmCtx[@cx], FitsUsize(4), v: u32))]
+    #[sig(fn (&mut VmCtx[@cx], FitsUsize(4), v: u32))]
     pub fn write_u32(&mut self, start: FitsUsize, v: u32) {
         let bytes: [u8; 4] = v.to_le_bytes();
         self.write_u8(start, bytes[0]);
@@ -266,7 +267,7 @@ impl VmCtx {
     // #[ensures(ctx_safe(self))]
     // #[ensures(trace_safe(trace, self))]
     // // #[ensures(effects!(old(trace), trace, effect!(WriteMem, addr, 8) if addr == start as usize))]
-    #[flux::sig(fn (&mut VmCtx[@cx], FitsUsize(8), v: u64))]
+    #[sig(fn (&mut VmCtx[@cx], FitsUsize(8), v: u64))]
     pub fn write_u64(&mut self, start: FitsUsize, v: u64) {
         let bytes: [u8; 8] = v.to_le_bytes();
         self.write_u8(start, bytes[0]);
@@ -279,8 +280,8 @@ impl VmCtx {
         self.write_u8(start + 7, bytes[7]);
     }
 
-    #[flux::qualifiers(MyQ1)]
-    #[flux::sig(fn(&VmCtx[@cx], &RVec<WasmIoVec>) -> RVec<NativeIoVecOk(cx.base)>)]
+    #[qualifiers(MyQ1)]
+    #[sig(fn(&VmCtx[@cx], &RVec<WasmIoVec>) -> RVec<NativeIoVecOk(cx.base)>)]
     pub fn translate_iovs(&self, iovs: &RVec<WasmIoVec>) -> RVec<NativeIoVecOk> {
         let mut idx = 0;
         let mut native_iovs = NativeIoVecs::new();

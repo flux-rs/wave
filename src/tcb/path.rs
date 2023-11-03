@@ -6,79 +6,80 @@ use crate::{
     rvec::RVec,
     types::{HostFd, Netlist},
 };
+use flux_rs::*;
 
-#[flux::constant]
+#[constant]
 const DEPTH_ERR: isize = i32::MIN as isize;
 
 #[allow(dead_code)]
-#[flux::opaque]
-#[flux::refined_by(depth:int, is_relative:bool, non_symlink:bool, non_symlink_prefixes:bool)]
+#[opaque]
+#[refined_by(depth:int, is_relative:bool, non_symlink:bool, non_symlink_prefixes:bool)]
 pub struct HostPath {
     pub inner: [u8; crate::types::PATH_MAX],
 }
 
 impl HostPath {
-    #[flux::trusted]
+    #[trusted]
     pub fn as_ptr(&self) -> *const u8 {
         self.inner.as_ptr()
     }
 }
 
-#[flux::opaque]
-#[flux::refined_by(size:int, ns_prefix:int, depth:int, is_relative:bool)]
+#[opaque]
+#[refined_by(size:int, ns_prefix:int, depth:int, is_relative:bool)]
 pub struct FOwnedComponents {
     inner: OwnedComponents,
 }
 
-// #[flux::alias(type HostPathOc(oc) = HostPath{ v: v.depth == oc.depth && v.is_relative == oc.is_relative
+// #[alias(type HostPathOc(oc) = HostPath{ v: v.depth == oc.depth && v.is_relative == oc.is_relative
 //                                               && v.non_symlink == (oc.size == oc.ns_prefix)
 //                                               && v.non_symlink_prefixes == (oc.size - 1 <= oc.ns_prefix) })]
 // pub type HostPathOc = HostPath;
 
-#[flux::alias(type NoSymLinks = FOwnedComponents{v: v.size == v.ns_prefix})]
+#[alias(type NoSymLinks = FOwnedComponents{v: v.size == v.ns_prefix})]
 pub type NoSymLinks = FOwnedComponents;
 
-#[flux::alias(type LastSymLink(b: bool) = FOwnedComponents{v: v.size - 1 <= v.ns_prefix && (b => v.size == v.ns_prefix)})]
+#[alias(type LastSymLink(b: bool) = FOwnedComponents{v: v.size - 1 <= v.ns_prefix && (b => v.size == v.ns_prefix)})]
 pub type LastSymLink = FOwnedComponents;
 
 impl FOwnedComponents {
-    #[flux::trusted]
-    #[flux::sig(fn (&FOwnedComponents[@self]) -> usize[self.size])]
+    #[trusted]
+    #[sig(fn (&FOwnedComponents[@self]) -> usize[self.size])]
     pub fn len(&self) -> usize {
         self.inner.len()
     }
 
-    #[flux::trusted]
-    #[flux::sig(fn (&FOwnedComponents[@self], idx:usize{0 <= idx && idx < self.size}) -> OwnedComponent)]
+    #[trusted]
+    #[sig(fn (&FOwnedComponents[@self], idx:usize{0 <= idx && idx < self.size}) -> OwnedComponent)]
     pub fn lookup(&self, idx: usize) -> OwnedComponent {
         self.inner.lookup(idx)
     }
 
-    #[flux::trusted]
-    #[flux::sig(fn() -> FOwnedComponents[0, 0, 0, false])]
+    #[trusted]
+    #[sig(fn() -> FOwnedComponents[0, 0, 0, false])]
     pub fn new() -> FOwnedComponents {
         FOwnedComponents {
             inner: OwnedComponents::new(),
         }
     }
 
-    #[flux::trusted]
-    #[flux::sig(fn (self: &strg FOwnedComponents[@oc], OwnedComponent) -> ()
+    #[trusted]
+    #[sig(fn (self: &strg FOwnedComponents[@oc], OwnedComponent) -> ()
                 ensures self: FOwnedComponents{v: v.size == oc.size + 1 && v.ns_prefix == oc.ns_prefix} )]
     pub fn push(&mut self, value: OwnedComponent) {
         self.inner.push(value);
     }
 
-    #[flux::trusted]
-    #[flux::sig(fn (oc:FOwnedComponents) -> Option<HostPath{v: v.depth == oc.depth && v.is_relative == oc.is_relative && v.non_symlink == (oc.size == oc.ns_prefix) && v.non_symlink_prefixes == (oc.size - 1 <= oc.ns_prefix) }>)]
+    #[trusted]
+    #[sig(fn (oc:FOwnedComponents) -> Option<HostPath{v: v.depth == oc.depth && v.is_relative == oc.is_relative && v.non_symlink == (oc.size == oc.ns_prefix) && v.non_symlink_prefixes == (oc.size - 1 <= oc.ns_prefix) }>)]
     pub fn unparse(self) -> Option<HostPath> {
         let inner = self.inner.unparse()?;
         Some(HostPath { inner })
     }
 }
 
-#[flux::trusted]
-#[flux::sig(fn(&PathBuf) -> RVec<OwnedComponent>)]
+#[trusted]
+#[sig(fn(&PathBuf) -> RVec<OwnedComponent>)]
 pub fn get_components(path: &PathBuf) -> RVec<OwnedComponent> {
     let mut components = RVec::new();
     for c in path.components() {
@@ -103,8 +104,8 @@ pub enum WasiProto {
 }
 
 // If the first component is not the rootdir or a prefix (like Windows C://) its relative
-#[flux::trusted]
-#[flux::sig(fn(&{FOwnedComponents[@oc] | oc.size > 0}) -> bool[oc.is_relative])]
+#[trusted]
+#[sig(fn(&{FOwnedComponents[@oc] | oc.size > 0}) -> bool[oc.is_relative])]
 pub fn is_relative(c: &FOwnedComponents) -> bool {
     let start = c.inner.lookup(0);
     !(matches!(start, OwnedComponent::RootDir))
@@ -113,8 +114,8 @@ pub fn is_relative(c: &FOwnedComponents) -> bool {
 // use really big negative number instead of option because the verifier does not like returning options from pure code
 // apparently I can make it pure or I can make it untrusted but I cannot do both
 
-#[flux::trusted]
-#[flux::sig(fn (&FOwnedComponents[@oc]) -> isize[oc.depth])]
+#[trusted]
+#[sig(fn (&FOwnedComponents[@oc]) -> isize[oc.depth])]
 pub fn min_depth(components: &FOwnedComponents) -> isize {
     let mut curr_depth = 0;
     let mut idx = 0;
@@ -141,8 +142,8 @@ pub fn min_depth(components: &FOwnedComponents) -> isize {
     curr_depth
 }
 
-#[flux::trusted]
-#[flux::sig(fn (HostFd, &FOwnedComponents[@oc]) -> Option<{FOwnedComponents | oc.ns_prefix == oc.size}>)]
+#[trusted]
+#[sig(fn (HostFd, &FOwnedComponents[@oc]) -> Option<{FOwnedComponents | oc.ns_prefix == oc.size}>)]
 fn read_linkat_h(dirfd: HostFd, out_path: &FOwnedComponents) -> Option<FOwnedComponents> {
     let inner = readlinkat(dirfd.to_raw(), &out_path.inner.as_pathbuf())
         .ok()
@@ -153,8 +154,8 @@ fn read_linkat_h(dirfd: HostFd, out_path: &FOwnedComponents) -> Option<FOwnedCom
 // Looks at a single component of a path:
 // if it is a symlink, return the linkpath.
 // else, we just append the value to out_path
-#[flux::trusted]
-#[flux::sig(fn (HostFd, &mut NoSymLinks, OwnedComponent, &mut isize) -> Option<FOwnedComponents>)]
+#[trusted]
+#[sig(fn (HostFd, &mut NoSymLinks, OwnedComponent, &mut isize) -> Option<FOwnedComponents>)]
 pub fn maybe_expand_component(
     dirfd: HostFd,
     out_path: &mut NoSymLinks,
@@ -170,21 +171,21 @@ pub fn maybe_expand_component(
     return None;
 }
 
-#[flux::trusted]
-#[flux::sig(fn () -> FOwnedComponents[0, 0, 0, false])]
+#[trusted]
+#[sig(fn () -> FOwnedComponents[0, 0, 0, false])]
 pub fn fresh_components() -> FOwnedComponents {
     FOwnedComponents {
         inner: OwnedComponents::new(),
     }
 }
 
-#[flux::alias(type CountSafe(ptr: int) = usize{cnt: fits_in_lin_mem(ptr, cnt) && cnt < LINEAR_MEM_SIZE })]
+#[alias(type CountSafe(ptr: int) = usize{cnt: fits_in_lin_mem(ptr, cnt) && cnt < LINEAR_MEM_SIZE })]
 pub type CountSafe = usize;
 
-#[flux::alias(type HostPathSafe(b: bool) = HostPath{v: v.depth >= 0 && v.is_relative && (b => v.non_symlink) && v.non_symlink_prefixes})]
+#[alias(type HostPathSafe(b: bool) = HostPath{v: v.depth >= 0 && v.is_relative && (b => v.non_symlink) && v.non_symlink_prefixes})]
 pub type HostPathSafe = HostPath;
 
 // FLUX-TODO2: (alias) gross, should allow using aliases to define aliases i.e. the below should be
 // HostPathFlags(flags) = HostPathSafe[!flag_set(flags, AT_SYMLINK_NOFOLLOW)]
-// #[flux::alias(type HostPathFlags(flags) = HostPathSafe[!flag_set(flags, AT_SYMLINK_NOFOLLOW)])]
+// #[alias(type HostPathFlags(flags) = HostPathSafe[!flag_set(flags, AT_SYMLINK_NOFOLLOW)])]
 pub type _HostPathFlags = HostPath;

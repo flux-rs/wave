@@ -10,6 +10,7 @@ use crate::tcb::path::{CountSafe, HostPath};
 #[cfg(feature = "verify")]
 use crate::tcb::verifier::*;
 use crate::types::*;
+use flux_rs::*;
 // use crate::{effect, effects};
 // use prusti_contracts::*;
 // use syscall::syscall;
@@ -30,7 +31,7 @@ pub use platform::*;
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(one_effect!(old(trace), trace, effect!(PathAccessAt, os_fd, p)))]
-#[flux::sig(fn (ctx: &VmCtx[@cx], dir_fd: HostFd[cx.homedir_host_fd], path: HostPathSafe(!flag_set(flags, O_NOFOLLOW)), flags: i32) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &VmCtx[@cx], dir_fd: HostFd[cx.homedir_host_fd], path: HostPathSafe(!flag_set(flags, O_NOFOLLOW)), flags: i32) -> Result<usize, RuntimeError>)]
 pub fn trace_openat(
     ctx: &VmCtx,
     dir_fd: HostFd,
@@ -63,7 +64,7 @@ pub fn trace_close(ctx: &VmCtx, fd: HostFd) -> Result<usize, RuntimeError> {
 // #[ensures(trace_safe(trace, ctx))]
 // read writes `cnt` bytes to sandbox memory
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess), effect!(WriteMem, addr, count)))]
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr)) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr)) -> Result<usize, RuntimeError>)]
 pub fn trace_read(
     ctx: &mut VmCtx,
     fd: HostFd,
@@ -94,7 +95,7 @@ pub fn trace_read(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@dummy], fd: HostFd, iovs: &RVec<WasmIoVec>, iovcnt: usize) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@dummy], fd: HostFd, iovs: &RVec<WasmIoVec>, iovcnt: usize) -> Result<usize, RuntimeError>)]
 pub fn trace_readv(
     ctx: &mut VmCtx,
     fd: HostFd,
@@ -125,7 +126,7 @@ pub fn trace_readv(
 // pread writes `cnt` bytes to sandbox memory
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess), effect!(WriteMem, addr, count)))]
 
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr), offset: usize) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr), offset: usize) -> Result<usize, RuntimeError>)]
 pub fn trace_pread(
     ctx: &mut VmCtx,
     fd: HostFd,
@@ -156,7 +157,7 @@ pub fn trace_pread(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, iovs: &RVec<WasmIoVec>, iovcnt: usize, offset: usize) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, iovs: &RVec<WasmIoVec>, iovcnt: usize, offset: usize) -> Result<usize, RuntimeError>)]
 pub fn trace_preadv(
     ctx: &mut VmCtx,
     fd: HostFd,
@@ -180,7 +181,7 @@ pub fn trace_preadv(
 // #[ensures(trace_safe(trace, ctx))]
 // write reads `cnt` bytes to the sandbox
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess), effect!(ReadMem, addr, count)))]
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr)) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr)) -> Result<usize, RuntimeError>)]
 pub fn trace_write(
     ctx: &mut VmCtx,
     fd: HostFd,
@@ -210,7 +211,7 @@ pub fn trace_write(
 // #[requires(trace_safe(trace, ctx))]
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, iovs: &RVec<WasmIoVec>, iovcnt: usize) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, iovs: &RVec<WasmIoVec>, iovcnt: usize) -> Result<usize, RuntimeError>)]
 pub fn trace_writev(
     ctx: &mut VmCtx,
     fd: HostFd,
@@ -242,7 +243,7 @@ pub fn trace_writev(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, iovs: &RVec<WasmIoVec>, iovcnt: usize, offset: usize) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, iovs: &RVec<WasmIoVec>, iovcnt: usize, offset: usize) -> Result<usize, RuntimeError>)]
 pub fn trace_pwritev(
     ctx: &mut VmCtx,
     fd: HostFd,
@@ -285,7 +286,7 @@ pub fn trace_pwritev(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-#[flux::sig(fn (ctx: &VmCtx[@cx], fd: HostFd, offset: i64, whence: i32) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &VmCtx[@cx], fd: HostFd, offset: i64, whence: i32) -> Result<usize, RuntimeError>)]
 pub fn trace_seek(
     ctx: &VmCtx,
     fd: HostFd,
@@ -341,7 +342,7 @@ pub fn trace_fstat(ctx: &VmCtx, fd: HostFd, stat: &mut libc::stat) -> Result<usi
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(two_effects!(old(trace), trace, effect!(FdAccess), effect!(PathAccessAt, os_fd)))]
-#[flux::sig(fn (ctx: &VmCtx[@cx], fd: HostFd[cx.homedir_host_fd], path: HostPathSafe(flag_not_set(flags, AT_SYMLINK_NOFOLLOW)), stat: &mut stat, flags: i32) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &VmCtx[@cx], fd: HostFd[cx.homedir_host_fd], path: HostPathSafe(flag_not_set(flags, AT_SYMLINK_NOFOLLOW)), stat: &mut stat, flags: i32) -> Result<usize, RuntimeError>)]
 pub fn trace_fstatat(
     ctx: &VmCtx,
     fd: HostFd,
@@ -400,7 +401,7 @@ pub fn trace_ftruncate(ctx: &VmCtx, fd: HostFd, length: libc::off_t) -> RuntimeR
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // // #[ensures(four_effects!(old(trace), trace, effect!(FdAccess), effect!(FdAccess), effect!(PathAccessAt, os_old_fd), effect!(PathAccessAt, os_new_fd)))]
-#[flux::sig(fn (ctx: &VmCtx[@cx], old_fd: HostFd[cx.homedir_host_fd], old_path: HostPathSafe(flag_set(flags, AT_SYMLINK_FOLLOW)), new_fd: HostFd[cx.homedir_host_fd], new_path: HostPathSafe(flag_set(flags, AT_SYMLINK_FOLLOW)), flags: i32) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &VmCtx[@cx], old_fd: HostFd[cx.homedir_host_fd], old_path: HostPathSafe(flag_set(flags, AT_SYMLINK_FOLLOW)), new_fd: HostFd[cx.homedir_host_fd], new_path: HostPathSafe(flag_set(flags, AT_SYMLINK_FOLLOW)), flags: i32) -> Result<usize, RuntimeError>)]
 pub fn trace_linkat(
     ctx: &VmCtx,
     old_fd: HostFd,
@@ -426,7 +427,7 @@ pub fn trace_linkat(
 // #[ensures(trace_safe(trace, ctx))]
 // // #[ensures(two_effects!(old(trace), trace, effect!(FdAccess), effect!(PathAccessAt, os_fd)))]
 
-#[flux::sig(fn (ctx: &VmCtx[@cx], dir_fd: HostFd[cx.homedir_host_fd], path: HostPathSafe(true), mode: mode_t) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &VmCtx[@cx], dir_fd: HostFd[cx.homedir_host_fd], path: HostPathSafe(true), mode: mode_t) -> Result<usize, RuntimeError>)]
 pub fn trace_mkdirat(
     ctx: &VmCtx,
     dir_fd: HostFd,
@@ -449,7 +450,7 @@ pub fn trace_mkdirat(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // // #[ensures(three_effects!(old(trace), trace, effect!(FdAccess), effect!(PathAccessAt, os_fd), effect!(WriteMem, addr, count)))]
-#[flux::sig(fn(ctx: &mut VmCtx[@cx], dir_fd: HostFd[cx.homedir_host_fd], pathname: HostPathSafe(false), ptr: SboxPtr, cnt: CountSafe(ptr)) -> Result<usize, RuntimeError>)]
+#[sig(fn(ctx: &mut VmCtx[@cx], dir_fd: HostFd[cx.homedir_host_fd], pathname: HostPathSafe(false), ptr: SboxPtr, cnt: CountSafe(ptr)) -> Result<usize, RuntimeError>)]
 pub fn trace_readlinkat(
     ctx: &mut VmCtx,
     dir_fd: HostFd,
@@ -472,7 +473,7 @@ pub fn trace_readlinkat(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // // #[ensures(two_effects!(old(trace), trace, effect!(FdAccess), effect!(PathAccessAt, os_fd)))]
-#[flux::sig(fn (ctx: &VmCtx[@cx], dir_fd: HostFd[cx.homedir_host_fd], path: HostPathSafe(false), flags: c_int) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &VmCtx[@cx], dir_fd: HostFd[cx.homedir_host_fd], path: HostPathSafe(false), flags: c_int) -> Result<usize, RuntimeError>)]
 pub fn trace_unlinkat(
     ctx: &VmCtx,
     dir_fd: HostFd,
@@ -495,7 +496,7 @@ pub fn trace_unlinkat(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // // #[ensures(four_effects!(old(trace), trace, effect!(FdAccess), effect!(PathAccessAt, os_old_fd), effect!(FdAccess), effect!(PathAccessAt, os_new_fd)))]
-#[flux::sig(fn(ctx: &VmCtx[@cx], old_dir_fd: HostFd[cx.homedir_host_fd], old_path: HostPathSafe(false), new_dir_fd: HostFd[cx.homedir_host_fd], new_path: HostPathSafe(false)) -> Result<usize, RuntimeError>)]
+#[sig(fn(ctx: &VmCtx[@cx], old_dir_fd: HostFd[cx.homedir_host_fd], old_path: HostPathSafe(false), new_dir_fd: HostFd[cx.homedir_host_fd], new_path: HostPathSafe(false)) -> Result<usize, RuntimeError>)]
 pub fn trace_renameat(
     ctx: &VmCtx,
     old_dir_fd: HostFd,
@@ -520,7 +521,7 @@ pub fn trace_renameat(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // // #[ensures(two_effects!(old(trace), trace,  effect!(PathAccessAt, os_fd), effect!(FdAccess)))]
-#[flux::sig(fn (ctx: &VmCtx[@cx], old_pathname: HostPathSafe(true), dir_fd: HostFd[cx.homedir_host_fd],  new_pathname: HostPathSafe(true)) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &VmCtx[@cx], old_pathname: HostPathSafe(true), dir_fd: HostFd[cx.homedir_host_fd],  new_pathname: HostPathSafe(true)) -> Result<usize, RuntimeError>)]
 pub fn trace_symlinkat(
     ctx: &VmCtx,
     old_pathname: HostPathSafe,
@@ -541,7 +542,7 @@ pub fn trace_symlinkat(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-#[flux::sig(fn (ctx: &VmCtx, fd: HostFd, specs: &RVec<timespec>{len: 2 <= len}) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &VmCtx, fd: HostFd, specs: &RVec<timespec>{len: 2 <= len}) -> Result<usize, RuntimeError>)]
 pub fn trace_futimens(
     ctx: &VmCtx,
     fd: HostFd,
@@ -561,7 +562,7 @@ pub fn trace_futimens(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // // #[ensures(two_effects!(old(trace), trace, effect!(FdAccess), effect!(PathAccessAt, os_fd)))]
-#[flux::sig(fn(ctx: &VmCtx[@cx], dir_fd: HostFd[cx.homedir_host_fd], path: HostPathSafe(!flag_set(flags, AT_SYMLINK_NOFOLLOW)), specs: &RVec<timespec>{len: 2 <= len}, flags: i32) -> Result<usize, RuntimeError>)]
+#[sig(fn(ctx: &VmCtx[@cx], dir_fd: HostFd[cx.homedir_host_fd], path: HostPathSafe(!flag_set(flags, AT_SYMLINK_NOFOLLOW)), specs: &RVec<timespec>{len: 2 <= len}, flags: i32) -> Result<usize, RuntimeError>)]
 pub fn trace_utimensat(
     ctx: &VmCtx,
     dir_fd: HostFd,
@@ -583,7 +584,7 @@ pub fn trace_utimensat(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // // #[ensures(effects!(old(trace), trace, effect!(WriteMem, addr, count)))]
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], ptr: SboxPtr, cnt: CountSafe(ptr), flags: u32) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], ptr: SboxPtr, cnt: CountSafe(ptr), flags: u32) -> Result<usize, RuntimeError>)]
 pub fn trace_getrandom(
     ctx: &mut VmCtx,
     ptr: SboxPtr,
@@ -605,7 +606,7 @@ pub fn trace_getrandom(
 // #[ensures(trace_safe(trace, ctx))]
 // // #[ensures(effects!(old(trace), trace, effect!(FdAccess), effect!(WriteMem, addr, count)))]
 
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr), flags: i32) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr), flags: i32) -> Result<usize, RuntimeError>)]
 pub fn trace_recv(
     ctx: &mut VmCtx,
     fd: HostFd,
@@ -627,7 +628,7 @@ pub fn trace_recv(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess), effect!(ReadMem, addr, count)))]
-#[flux::sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr), flags: i32) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr), flags: i32) -> Result<usize, RuntimeError>)]
 pub fn trace_send(
     ctx: &mut VmCtx,
     fd: HostFd,
@@ -676,7 +677,7 @@ pub fn trace_poll(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-#[flux::sig(fn (ctx: &VmCtx, fd: HostFd, dirp: &mut RVec<u8>[@capacity], count: usize{capacity >= count}) -> Result<usize, RuntimeError>)]
+#[sig(fn (ctx: &VmCtx, fd: HostFd, dirp: &mut RVec<u8>[@capacity], count: usize{capacity >= count}) -> Result<usize, RuntimeError>)]
 pub fn trace_getdents64(
     ctx: &VmCtx,
     fd: HostFd,
@@ -696,7 +697,7 @@ pub fn trace_getdents64(
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(SockCreation, d, t) if d == domain as usize && t == ty as usize ))]
 
-#[flux::sig(fn (ctx: &VmCtx, domain: i32, ty: i32, protocol: i32) -> Result<usize, RuntimeError> requires SockCreation(domain, ty))]
+#[sig(fn (ctx: &VmCtx, domain: i32, ty: i32, protocol: i32) -> Result<usize, RuntimeError> requires SockCreation(domain, ty))]
 pub fn trace_socket(
     ctx: &VmCtx,
     domain: i32,
@@ -714,7 +715,7 @@ pub fn trace_socket(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess), effect!(NetAccess, protocol, ip, port)))]
-#[flux::sig(fn (ctx: &VmCtx[@cx], sockfd: HostFd, addr: &SockAddr[@saddr], addrlen: u32) -> Result<usize, RuntimeError> requires addr_in_netlist(cx.net, saddr.addr, saddr.port))]
+#[sig(fn (ctx: &VmCtx[@cx], sockfd: HostFd, addr: &SockAddr[@saddr], addrlen: u32) -> Result<usize, RuntimeError> requires addr_in_netlist(cx.net, saddr.addr, saddr.port))]
 pub fn trace_connect(
     ctx: &VmCtx,
     sockfd: HostFd,

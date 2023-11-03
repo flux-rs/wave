@@ -2,10 +2,11 @@ use std::ptr::copy_nonoverlapping;
 
 use crate::rvec::{BSlice, RVec};
 use crate::types::{NativeIoVec, NativeIoVecOk, SboxPtr, VmCtx, WasmIoVec};
+use flux_rs::*;
 
 impl VmCtx {
-    #[flux::trusted]
-    #[flux::sig(fn(self: &VmCtx[@cx], WasmIoVec) -> NativeIoVecOk(cx.base))]
+    #[trusted]
+    #[sig(fn(self: &VmCtx[@cx], WasmIoVec) -> NativeIoVecOk(cx.base))]
     pub fn translate_iov(&self, iov: WasmIoVec) -> NativeIoVecOk {
         // let swizzled_base = self.raw + iov.iov_base as usize;
         let swizzled_base =
@@ -17,8 +18,8 @@ impl VmCtx {
     }
 
     // FLUX-TODO2: capacity (see wave spec)
-    #[flux::trusted]
-    #[flux::sig(fn(self: &VmCtx, &mut RVec<u8>[n], src: SboxPtr{src + n < LINEAR_MEM_SIZE}, n:u32{0 <= n}))]
+    #[trusted]
+    #[sig(fn(self: &VmCtx, &mut RVec<u8>[n], src: SboxPtr{src + n < LINEAR_MEM_SIZE}, n:u32{0 <= n}))]
     #[allow(unused_variables)]
     pub fn memcpy_from_sandbox(&self, dst: &mut RVec<u8>, src: SboxPtr, n: u32) {
         unsafe {
@@ -33,8 +34,8 @@ impl VmCtx {
     }
 
     #[allow(unused_variables)]
-    #[flux::trusted]
-    #[flux::sig(fn(self: &mut VmCtx[@cx], dst: SboxPtr{dst + n < LINEAR_MEM_SIZE}, &RVec<u8>{sz:n <= sz}, n:u32))]
+    #[trusted]
+    #[sig(fn(self: &mut VmCtx[@cx], dst: SboxPtr{dst + n < LINEAR_MEM_SIZE}, &RVec<u8>{sz:n <= sz}, n:u32))]
     pub fn memcpy_to_sandbox(&mut self, dst: SboxPtr, src: &RVec<u8>, n: u32) {
         unsafe {
             copy_nonoverlapping(
@@ -58,16 +59,16 @@ impl VmCtx {
     //     raw_ptr(self.mem.as_slice()) + ptr as usize == before_expiry(raw_ptr(result)) &&
     //     old(self.netlist) == self.netlist &&
     //     old(self.homedir_host_fd) == self.homedir_host_fd)]
-    #[flux::trusted]
-    #[flux::sig(fn(self: &mut VmCtx[@cx], ptr: SboxPtr, len: u32{fits_in_lin_mem(ptr, len)}) -> &mut [u8][len])]
+    #[trusted]
+    #[sig(fn(self: &mut VmCtx[@cx], ptr: SboxPtr, len: u32{fits_in_lin_mem(ptr, len)}) -> &mut [u8][len])]
     pub fn slice_mem_mut(&mut self, ptr: SboxPtr, len: u32) -> &mut [u8] {
         let start = ptr as usize;
         let end = ptr as usize + len as usize;
         &mut self.mem.inner[start..end]
     }
 
-    #[flux::trusted]
-    #[flux::sig(fn(self: &mut VmCtx[@cx], ptr: SboxPtr, len: u32{fits_in_lin_mem(ptr, len)}) -> BSlice[cx.base, cx.base + ptr, len])]
+    #[trusted]
+    #[sig(fn(self: &mut VmCtx[@cx], ptr: SboxPtr, len: u32{fits_in_lin_mem(ptr, len)}) -> BSlice[cx.base, cx.base + ptr, len])]
     pub fn rslice_mem_mut(&mut self, ptr: SboxPtr, len: u32) -> BSlice {
         let start = ptr as usize;
         let end = ptr as usize + len as usize;

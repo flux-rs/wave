@@ -1,5 +1,5 @@
 // ignore checking this module (and all its contents)
-#![flux::ignore]
+#![cfg_attr(flux, flux::ignore)]
 use core::arch::x86_64::{__cpuid_count, __rdtscp, _rdtsc};
 use std::cell::RefCell;
 use std::collections::HashMap;

@@ -8,6 +8,7 @@
 
 use crate::types::*;
 use crate::{rvec, rvec::RVec};
+use flux_rs::*;
 use std::io::{stderr, stdin, stdout};
 use std::os::unix::io::AsRawFd;
 use RuntimeError::*;
@@ -23,7 +24,7 @@ We will prove things about it's API as necessary.
 // homedir is hardcoded to 3.
 
 impl FdMap {
-    #[flux::sig(fn () -> FdMap[0, 0])]
+    #[sig(fn () -> FdMap[0, 0])]
     pub fn new() -> FdMap {
         FdMap {
             m: rvec![Err(Ebadf); MAX_SBOX_FDS as usize],
@@ -35,7 +36,7 @@ impl FdMap {
 
     // #[requires (self.counter == 0)] //should only be called on empty fdmap
 
-    #[flux::sig(fn (self: &strg { FdMap[@fm] | fm.counter == 0}) -> Result<(), RuntimeError> ensures self: FdMap)]
+    #[sig(fn (self: &strg { FdMap[@fm] | fm.counter == 0}) -> Result<(), RuntimeError> ensures self: FdMap)]
     pub fn init_std_fds(&mut self) -> Result<(), RuntimeError> {
         let stdin_fd = stdin().as_raw_fd();
         let stdout_fd = stdout().as_raw_fd();
@@ -60,7 +61,7 @@ impl FdMap {
     // #[with_ghost_var(trace: &Trace)]
     // #[external_calls(vec_checked_lookup)]
     // #[ensures(result.is_ok() ==> old(v_fd) < MAX_SBOX_FDS)]
-    #[flux::sig(fn (&FdMap, v_fd: SboxFd) -> Result<{HostFd | v_fd < MAX_SBOX_FDS}, RuntimeError>)]
+    #[sig(fn (&FdMap, v_fd: SboxFd) -> Result<{HostFd | v_fd < MAX_SBOX_FDS}, RuntimeError>)]
     pub fn fd_to_native(&self, v_fd: SboxFd) -> Result<HostFd, RuntimeError> {
         if v_fd >= MAX_SBOX_FDS {
             return Err(Ebadf);
@@ -75,7 +76,7 @@ impl FdMap {
     //     matches!(self.lookup(index), Ok(_))
     // }
 
-    #[flux::sig(fn (self: &strg FdMap[@fd]) -> Result<SboxFdSafe, RuntimeError> ensures self: FdMap)]
+    #[sig(fn (self: &strg FdMap[@fd]) -> Result<SboxFdSafe, RuntimeError> ensures self: FdMap)]
     fn pop_fd(&mut self) -> Result<SboxFdSafe, RuntimeError> {
         if self.reserve.len() > 0 {
             Ok(self.reserve.pop())
@@ -88,14 +89,14 @@ impl FdMap {
         }
     }
 
-    #[flux::sig(fn (self: &strg FdMap[@dummy], k: HostFd) -> Result<SboxFd, RuntimeError> ensures self: FdMap)]
+    #[sig(fn (self: &strg FdMap[@dummy], k: HostFd) -> Result<SboxFd, RuntimeError> ensures self: FdMap)]
     pub fn create(&mut self, k: HostFd) -> Result<SboxFd, RuntimeError> {
         let s_fd = self.pop_fd()?;
         self.m[s_fd as usize] = Ok(k);
         Ok(s_fd)
     }
 
-    #[flux::sig(fn (self: &strg FdMap[@dummy], k: HostFd, proto: WasiProto) -> Result<SboxFd, RuntimeError> ensures self: FdMap)]
+    #[sig(fn (self: &strg FdMap[@dummy], k: HostFd, proto: WasiProto) -> Result<SboxFd, RuntimeError> ensures self: FdMap)]
     pub fn create_sock(&mut self, k: HostFd, proto: WasiProto) -> Result<SboxFd, RuntimeError> {
         let s_fd = self.pop_fd()?;
         self.m[s_fd as usize] = Ok(k);
@@ -105,7 +106,7 @@ impl FdMap {
 
     // #[requires(k < MAX_SBOX_FDS)]
     // FLUX-TODO2 open-mut-ref
-    #[flux::sig(fn (self: &strg FdMap, k: SboxFdSafe) ensures self: FdMap)]
+    #[sig(fn (self: &strg FdMap, k: SboxFdSafe) ensures self: FdMap)]
     pub fn delete(&mut self, k: SboxFdSafe) {
         if let Ok(oldfd) = self.m[k as usize] {
             self.reserve.push(k);
@@ -115,7 +116,7 @@ impl FdMap {
 
     // #[requires(from < MAX_SBOX_FDS)]
     // #[requires(to < MAX_SBOX_FDS)]
-    #[flux::sig(fn (self: &mut FdMap[@dummy], from: SboxFdSafe, to: SboxFdSafe))]
+    #[sig(fn (self: &mut FdMap[@dummy], from: SboxFdSafe, to: SboxFdSafe))]
     pub fn shift(&mut self, from: SboxFdSafe, to: SboxFdSafe) {
         if let Ok(hostfd) = self.m[from as usize] {
             self.m[to as usize] = Ok(hostfd)

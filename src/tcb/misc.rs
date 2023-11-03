@@ -3,6 +3,7 @@ use crate::rvec::RVec;
 // use crate::tcb::verifier::*;
 use crate::types::*;
 // use prusti_contracts::*;
+use flux_rs::*;
 use std::os::unix::io::AsRawFd;
 use std::vec::Vec;
 // use wave_macros::with_ghost_var;
@@ -17,16 +18,16 @@ use std::vec::Vec;
 // #[trusted]
 // #[pure]
 // #[ensures(bv == 0 ==> result == false)]
-#[flux::trusted]
-#[flux::sig(fn (bv: u16, n: i32) -> bool[nth_bit_set(bv, n)])]
+#[trusted]
+#[sig(fn (bv: u16, n: i32) -> bool[nth_bit_set(bv, n)])]
 pub fn nth_bit_set(bv: u16, n: i32) -> bool {
     bv & (1 << n) != 0
 }
 
 // #[trusted]
 // #[pure]
-#[flux::trusted]
-#[flux::sig(fn (bv: u32, n: u32) -> bool[nth_bit_set(bv, n)])]
+#[trusted]
+#[sig(fn (bv: u32, n: u32) -> bool[nth_bit_set(bv, n)])]
 pub fn nth_bit_set_u32(bv: u32, n: u32) -> bool {
     bv & (1 << n) != 0
 }
@@ -34,47 +35,47 @@ pub fn nth_bit_set_u32(bv: u32, n: u32) -> bool {
 /// return bv with the nth bit from the lsb set (0 is lsb)
 // #[trusted]
 // #[pure]
-#[flux::trusted]
+#[trusted]
 pub fn with_nth_bit_set(bv: u16, n: i32) -> u16 {
     bv | (1 << n)
 }
 
 // #[trusted]
 // #[pure]
-#[flux::trusted]
-#[flux::sig(fn (bv: i32, flag: i32) -> bool{b: (b == flag_set(bv, flag)) && (b => (bv != 0)) })]
+#[trusted]
+#[sig(fn (bv: i32, flag: i32) -> bool{b: (b == flag_set(bv, flag)) && (b => (bv != 0)) })]
 pub fn flag_set(bv: i32, flag: i32) -> bool {
     (bv & flag) == flag
 }
 
 // #[trusted]
 // #[pure]
-#[flux::trusted]
+#[trusted]
 pub fn bitwise_and(bv1: i32, bv2: i32) -> i32 {
     bv1 & bv2
 }
 
 // #[trusted]
-#[flux::trusted]
+#[trusted]
 pub fn bitwise_and_i16(bv1: i16, bv2: i16) -> i16 {
     bv1 & bv2
 }
 
 // #[trusted]
-#[flux::trusted]
+#[trusted]
 pub fn bitwise_and_u16(bv1: u16, bv2: u16) -> u16 {
     bv1 & bv2
 }
 
 // #[trusted]
 // #[pure]
-#[flux::trusted]
+#[trusted]
 pub fn bitwise_and_u32(bv1: u32, bv2: u32) -> u32 {
     bv1 & bv2
 }
 
 // #[trusted]
-#[flux::trusted]
+#[trusted]
 pub fn bitwise_and_u64(bv1: u64, bv2: u64) -> u64 {
     bv1 & bv2
 }
@@ -85,13 +86,13 @@ pub fn bitwise_and_u64(bv1: u64, bv2: u64) -> u64 {
 // nonzero result
 // #[with_ghost_var(trace: &mut Trace)]
 // #[ensures(result >= bv1 && result >= bv2)]
-#[flux::trusted]
+#[trusted]
 pub fn bitwise_or(bv1: i32, bv2: i32) -> i32 {
     bv1 | bv2
 }
 
 // #[trusted]
-#[flux::trusted]
+#[trusted]
 pub fn bitwise_or_u32(bv1: u32, bv2: u32) -> u32 {
     bv1 | bv2
 }
@@ -104,7 +105,7 @@ pub fn bitwise_or_u32(bv1: u32, bv2: u32) -> u32 {
 // }
 // reference)
 // #[trusted]
-#[flux::trusted]
+#[trusted]
 pub fn fresh_stat() -> libc::stat {
     unsafe { std::mem::zeroed() }
 }
@@ -117,16 +118,16 @@ pub fn fresh_stat() -> libc::stat {
 // }
 // reference)
 // #[trusted]
-#[flux::trusted]
+#[trusted]
 pub fn fresh_rusage() -> libc::rusage {
     unsafe { std::mem::zeroed() }
 }
 
-#[flux::trusted]
+#[trusted]
 // #[requires(len >= offset)]
 // #[requires(buf.len() >= start + len)]
 // #[ensures(result < old(len))]
-#[flux::sig(fn (buf: &RVec<u8>{buf_len: buf_len >= start + len}, start: usize, offset: usize, len: usize{len >= offset}) -> usize{result : result < len})]
+#[sig(fn (buf: &RVec<u8>{buf_len: buf_len >= start + len}, start: usize, offset: usize, len: usize{len >= offset}) -> usize{result : result < len})]
 pub fn first_null(buf: &RVec<u8>, start: usize, offset: usize, len: usize) -> usize {
     buf.inner[start + offset..start + len]
         .iter()
@@ -135,7 +136,7 @@ pub fn first_null(buf: &RVec<u8>, start: usize, offset: usize, len: usize) -> us
 }
 
 // #[trusted]
-#[flux::trusted]
+#[trusted]
 pub fn push_dirent_name(out_buf: &mut RVec<u8>, buf: &RVec<u8>, start: usize, len: usize) {
     out_buf
         .inner
@@ -152,7 +153,7 @@ pub fn push_dirent_name(out_buf: &mut RVec<u8>, buf: &RVec<u8>, start: usize, le
 
 // TODO: should probably fail more elegantly than this
 // #[trusted]
-#[flux::trusted]
+#[trusted]
 pub fn get_homedir_fd(s: &String) -> i32 {
     let homedir_file = std::fs::File::open(s).unwrap();
     let homedir_fd = homedir_file.as_raw_fd();
@@ -164,7 +165,7 @@ pub fn get_homedir_fd(s: &String) -> i32 {
 }
 
 // #[trusted]
-#[flux::trusted]
+#[trusted]
 pub fn string_to_rvec_u8(s: &String) -> RVec<u8> {
     RVec::from_vec(s.as_bytes().to_vec())
 }
@@ -183,13 +184,13 @@ pub fn empty_netlist() -> Netlist {
 
 // this shouldn't need to be trusted, but prusti does not casting an enum to an int
 // #[trusted]
-#[flux::trusted]
+#[trusted]
 pub fn as_u32(e: RuntimeError) -> u32 {
     e as u32
 }
 
 // #[trusted]
-#[flux::trusted]
+#[trusted]
 pub fn as_u16(e: RuntimeError) -> u16 {
     e as u16
 }
@@ -202,13 +203,13 @@ pub fn as_u16(e: RuntimeError) -> u16 {
 // }
 
 // FLUX-TODO2: see https://github.com/liquid-rust/flux/issues/285
-#[flux::trusted]
+#[trusted]
 pub fn unsize_arr_slice_8(arr: &[u8; 8]) -> &[u8] {
     arr
 }
 
 // FLUX-TODO2: see https://github.com/liquid-rust/flux/issues/285
-#[flux::trusted]
+#[trusted]
 pub fn unsize_arr_slice_4(arr: &[u8; 4]) -> &[u8] {
     arr
 }

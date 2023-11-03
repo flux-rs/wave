@@ -8,6 +8,7 @@ use crate::types::*;
 use crate::wrappers::wasi_clock_time_get;
 use crate::{os::trace_fionread, rvec::RVec}; // TODO: remove this circular reference
                                              // use prusti_contracts::*;
+use flux_rs::*;
 use std::convert::{TryFrom, TryInto};
 // use wave_macros::{external_calls, external_methods, with_ghost_var};
 use RuntimeError::*;
@@ -19,7 +20,7 @@ use RuntimeError::*;
 // #[ensures(trace_safe(trace, ctx))]
 // #[external_methods(push, checked_sub, try_into, subscription_clock_abstime)]
 // #[external_calls(Some)]
-#[flux::sig(fn (ctx: &VmCtx, sub_clock: SubscriptionClock, precision: u64, min_timeout: &mut Option<Timestamp>, timeouts: &strg RVec<(u64, Timestamp)>, userdata: u64) -> Result<(), RuntimeError> ensures timeouts: RVec<(u64, Timestamp)>)]
+#[sig(fn (ctx: &VmCtx, sub_clock: SubscriptionClock, precision: u64, min_timeout: &mut Option<Timestamp>, timeouts: &strg RVec<(u64, Timestamp)>, userdata: u64) -> Result<(), RuntimeError> ensures timeouts: RVec<(u64, Timestamp)>)]
 pub fn poll_parse_clock(
     ctx: &VmCtx,
     sub_clock: SubscriptionClock,
@@ -67,7 +68,7 @@ pub fn poll_parse_clock(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[external_methods(push, to_posix)]
-#[flux::sig(fn (ctx: &VmCtx, pollfds: &strg RVec<libc::pollfd>, fd_data: &strg RVec<(u64, SubscriptionFdType)>, userdata: u64, subscription_readwrite: SubscriptionFdReadWrite) -> Result<(), RuntimeError> ensures pollfds: RVec<libc::pollfd>, fd_data: RVec<(u64, SubscriptionFdType)>)]
+#[sig(fn (ctx: &VmCtx, pollfds: &strg RVec<libc::pollfd>, fd_data: &strg RVec<(u64, SubscriptionFdType)>, userdata: u64, subscription_readwrite: SubscriptionFdReadWrite) -> Result<(), RuntimeError> ensures pollfds: RVec<libc::pollfd>, fd_data: RVec<(u64, SubscriptionFdType)>)]
 pub fn poll_parse_fds(
     ctx: &VmCtx,
     pollfds: &mut RVec<libc::pollfd>,
@@ -99,7 +100,7 @@ pub fn poll_parse_fds(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[external_calls(poll_handle_fds, poll_handle_clock)]
-#[flux::sig(fn (ctx: &VmCtx, in_ptr: u32, nsubscriptions: u32, precision: u64, min_timeout: &mut Option<Timestamp>, timeouts: &strg RVec<(u64, Timestamp)>, pollfds: &strg RVec<libc::pollfd>, fd_data: &strg RVec<(u64, SubscriptionFdType)>) -> Result<(), RuntimeError> ensures timeouts: RVec<(u64, Timestamp)>, pollfds: RVec<libc::pollfd>, fd_data: RVec<(u64, SubscriptionFdType)>)]
+#[sig(fn (ctx: &VmCtx, in_ptr: u32, nsubscriptions: u32, precision: u64, min_timeout: &mut Option<Timestamp>, timeouts: &strg RVec<(u64, Timestamp)>, pollfds: &strg RVec<libc::pollfd>, fd_data: &strg RVec<(u64, SubscriptionFdType)>) -> Result<(), RuntimeError> ensures timeouts: RVec<(u64, Timestamp)>, pollfds: RVec<libc::pollfd>, fd_data: RVec<(u64, SubscriptionFdType)>)]
 pub fn parse_subscriptions(
     ctx: &VmCtx,
     in_ptr: u32,

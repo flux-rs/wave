@@ -18,42 +18,43 @@ use crate::{
     path = "platform/linux-x86_64.rs"
 )]
 mod platform;
+use flux_rs::*;
 use libc::mode_t;
 pub use platform::*;
 
-#[flux::constant]
+#[constant]
 pub const LINEAR_MEM_SIZE: usize = 4294965096; //4GB
 
-#[flux::constant]
+#[constant]
 pub const HOMEDIR_FD: SboxFd = 3; //4GB
 
-#[flux::constant]
+#[constant]
 pub const TWO_POWER_20: usize = 1024 * 1024;
 
-#[flux::constant]
+#[constant]
 pub const PATH_MAX: usize = 4096;
 
-#[flux::constant]
+#[constant]
 pub const MAX_SBOX_FDS: u32 = 8; // up to 16 or 32?
 
 // FLUX-TODO2: extern-const
-#[flux::constant]
+#[constant]
 pub const AT_SYMLINK_NOFOLLOW: i32 = libc::AT_SYMLINK_NOFOLLOW;
-#[flux::constant]
+#[constant]
 pub const AT_SYMLINK_FOLLOW: i32 = libc::AT_SYMLINK_FOLLOW;
-#[flux::constant]
+#[constant]
 pub const O_NOFOLLOW: i32 = libc::O_NOFOLLOW;
 
-#[flux::constant]
+#[constant]
 pub const SOCK_STREAM: i32 = libc::SOCK_STREAM;
-#[flux::constant]
+#[constant]
 pub const SOCK_DGRAM: i32 = libc::SOCK_DGRAM;
-#[flux::constant]
+#[constant]
 pub const AF_INET: i32 = libc::AF_INET;
 
 pub type RuntimeResult<T> = Result<T, RuntimeError>;
 
-#[flux::alias(type SboxPtr[n: int] = u32[@n])]
+#[alias(type SboxPtr[n: int] = u32[@n])]
 pub type SboxPtr = u32;
 pub type HostPtr = usize;
 
@@ -183,30 +184,30 @@ pub struct Dirent {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-#[flux::refined_by(iov_base: int)]
+#[refined_by(iov_base: int)]
 pub struct WasmIoVec {
-    #[flux::field({ u32[@iov_base] | 0 <= iov_base})]
+    #[field({ u32[@iov_base] | 0 <= iov_base})]
     pub iov_base: u32,
-    #[flux::field(u32{ len : 0 <= len && iov_base <= iov_base + len && iov_base + len < LINEAR_MEM_SIZE })]
+    #[field(u32{ len : 0 <= len && iov_base <= iov_base + len && iov_base + len < LINEAR_MEM_SIZE })]
     pub iov_len: u32,
 }
 
 #[repr(C)]
 #[derive(Clone, Copy, PartialEq, Eq)]
-#[flux::refined_by(iov_base: int, iov_len: int)]
+#[refined_by(iov_base: int, iov_len: int)]
 pub struct NativeIoVec {
-    #[flux::field(usize[@iov_base])]
+    #[field(usize[@iov_base])]
     pub iov_base: usize,
-    #[flux::field(usize[@iov_len])]
+    #[field(usize[@iov_len])]
     pub iov_len: usize,
 }
 
-#[flux::alias(type NativeIoVecOk(base: int) = NativeIoVec{v: v.iov_base + v.iov_len <= base + LINEAR_MEM_SIZE})]
+#[alias(type NativeIoVecOk(base: int) = NativeIoVec{v: v.iov_base + v.iov_len <= base + LINEAR_MEM_SIZE})]
 pub type NativeIoVecOk = NativeIoVec;
 
 pub type NativeIoVecs = RVec<NativeIoVec>;
 // An `assert` function, whose precondition expects only `true`
-#[flux::sig(fn(bool[true]) -> ())]
+#[sig(fn(bool[true]) -> ())]
 pub fn assert(_b: bool) {}
 
 #[macro_export]
@@ -221,21 +222,21 @@ macro_rules! unwrap_result {
     };
 }
 
-#[flux::alias(type SboxFd[n: int] = u32[@n])]
+#[alias(type SboxFd[n: int] = u32[@n])]
 pub type SboxFd = u32;
 
-#[flux::alias(type SboxFdSafe = SboxFd{v: v < MAX_SBOX_FDS})]
+#[alias(type SboxFdSafe = SboxFd{v: v < MAX_SBOX_FDS})]
 pub type SboxFdSafe = SboxFd;
 
-#[flux::refined_by(reserve_len: int, counter: int)]
+#[refined_by(reserve_len: int, counter: int)]
 pub struct FdMap {
-    #[flux::field(RVec< Result<HostFd, RuntimeError> >[MAX_SBOX_FDS])]
+    #[field(RVec< Result<HostFd, RuntimeError> >[MAX_SBOX_FDS])]
     pub m: RVec<Result<HostFd, RuntimeError>>,
-    #[flux::field(RVec< Result<WasiProto, RuntimeError> >[MAX_SBOX_FDS])]
+    #[field(RVec< Result<WasiProto, RuntimeError> >[MAX_SBOX_FDS])]
     pub sockinfo: RVec<Result<WasiProto, RuntimeError>>,
-    #[flux::field(RVec<SboxFd{v:v < MAX_SBOX_FDS}>[@reserve_len])]
+    #[field(RVec<SboxFd{v:v < MAX_SBOX_FDS}>[@reserve_len])]
     pub reserve: RVec<SboxFd>,
-    #[flux::field(SboxFd[@counter])]
+    #[field(SboxFd[@counter])]
     pub counter: SboxFd,
 }
 
@@ -261,45 +262,45 @@ impl WasiProto {
     }
 }
 
-#[flux::refined_by(arg_buf: int, env_buf: int, base: int, homedir_host_fd: int, net: int)]
+#[refined_by(arg_buf: int, env_buf: int, base: int, homedir_host_fd: int, net: int)]
 pub struct VmCtx {
-    #[flux::field(usize[@base])]
+    #[field(usize[@base])]
     pub ghost_raw: usize,
-    #[flux::field(RVec<u8>[LINEAR_MEM_SIZE])]
+    #[field(RVec<u8>[LINEAR_MEM_SIZE])]
     pub mem: RVec<u8>,
-    #[flux::field(usize[LINEAR_MEM_SIZE])]
+    #[field(usize[LINEAR_MEM_SIZE])]
     pub memlen: usize,
     pub fdmap: FdMap,
     pub homedir: String,
-    #[flux::field(HostFd[@homedir_host_fd])]
+    #[field(HostFd[@homedir_host_fd])]
     pub homedir_host_fd: HostFd,
-    #[flux::field({RVec<u8>[@arg_buf] | arg_buf < TWO_POWER_20 } )]
+    #[field({RVec<u8>[@arg_buf] | arg_buf < TWO_POWER_20 } )]
     pub arg_buffer: RVec<u8>,
-    #[flux::field({ RVec<u8>[@env_buf] | env_buf < TWO_POWER_20 })]
+    #[field({ RVec<u8>[@env_buf] | env_buf < TWO_POWER_20 })]
     pub env_buffer: RVec<u8>,
-    #[flux::field(usize{v: v < 1024})]
+    #[field(usize{v: v < 1024})]
     pub envc: usize,
-    #[flux::field(usize{v: v < 1024})]
+    #[field(usize{v: v < 1024})]
     pub argc: usize,
-    #[flux::field(Netlist[@net])]
+    #[field(Netlist[@net])]
     pub netlist: Netlist,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-#[flux::refined_by(raw: int)]
+#[refined_by(raw: int)]
 pub struct HostFd {
-    #[flux::field(usize[@raw])]
+    #[field(usize[@raw])]
     pub raw: usize,
 }
 
 impl HostFd {
-    #[flux::sig(fn(&HostFd[@h]) -> usize[h.raw])]
+    #[sig(fn(&HostFd[@h]) -> usize[h.raw])]
     pub(crate) fn to_raw(&self) -> usize {
         self.raw
     }
 
     #[allow(dead_code)]
-    #[flux::sig(fn(n:usize) -> HostFd[n])]
+    #[sig(fn(n:usize) -> HostFd[n])]
     pub(crate) fn from_raw(w: usize) -> HostFd {
         HostFd { raw: w }
     }
@@ -329,7 +330,7 @@ impl RuntimeError {
     //     Ok(r) => r == ret as usize,
     //     _ => false,
     // }))]
-    #[flux::sig(fn (ret:isize) -> Result<usize[ret], RuntimeError>)]
+    #[sig(fn (ret:isize) -> Result<usize[ret], RuntimeError>)]
     pub fn from_syscall_ret(ret: isize) -> Result<usize, RuntimeError> {
         // syscall returns between -1 and -4095 are errors, source:
         // https://code.woboq.org/userspace/glibc/sysdeps/unix/sysv/linux/x86_64/sysdep.h.html#369
@@ -611,9 +612,9 @@ impl From<libc::stat> for FileStat {
     }
 }
 
-#[flux::refined_by(flags:int)]
+#[refined_by(flags:int)]
 pub struct LookupFlags {
-    #[flux::field(u32[@flags])]
+    #[field(u32[@flags])]
     flags: u32,
 }
 
@@ -749,7 +750,7 @@ impl Timestamp {
     }
 
     // FLUX-TODO2: closure
-    #[flux::trusted]
+    #[trusted]
     pub fn checked_sub(self, rhs: Self) -> Option<Self> {
         self.0.checked_sub(rhs.0).map(|res| Timestamp(res))
     }
@@ -1145,20 +1146,20 @@ pub struct NetEndpoint {
     pub port: u32,
 }
 
-#[flux::opaque]
-#[flux::refined_by(netlist: int)]
+#[opaque]
+#[refined_by(netlist: int)]
 #[derive(Clone, Copy)]
 pub struct Netlist {
     inner: [NetEndpoint; 4],
 }
 
 impl Netlist {
-    #[flux::trusted]
+    #[trusted]
     pub fn new(inner: [NetEndpoint; 4]) -> Netlist {
         Netlist { inner }
     }
 
-    #[flux::sig(fn (self: &Netlist[@net], addr: u32, port: u32) -> bool[addr_in_netlist(net, addr, port)])]
+    #[sig(fn (self: &Netlist[@net], addr: u32, port: u32) -> bool[addr_in_netlist(net, addr, port)])]
     pub fn addr_in_netlist(&self, addr: u32, port: u32) -> bool {
         if self.addr_matches_netlist_entry(addr, port, 0) {
             return true;
@@ -1177,8 +1178,8 @@ impl Netlist {
 
     // #[requires(idx < 4)]
     // #[pure]
-    #[flux::trusted]
-    #[flux::sig(fn (self: &Netlist[@net], addr: u32, port: u32, idx: usize{idx < 4}) -> bool[addr_matches_netlist_entry(net, addr, port, idx)])]
+    #[trusted]
+    #[sig(fn (self: &Netlist[@net], addr: u32, port: u32, idx: usize{idx < 4}) -> bool[addr_matches_netlist_entry(net, addr, port, idx)])]
     fn addr_matches_netlist_entry(&self, addr: u32, port: u32, idx: usize) -> bool {
         addr == self.inner[idx].addr && port == self.inner[idx].port
     }
@@ -1188,28 +1189,28 @@ impl Netlist {
 // Various rust features that are not supported by flux
 //////////////////////////////////////////////////////////////////////////////
 
-#[flux::trusted]
-#[flux::sig(fn (n:isize{0 <= n}) -> usize[n])]
+#[trusted]
+#[sig(fn (n:isize{0 <= n}) -> usize[n])]
 pub fn isize_as_usize(n: isize) -> usize {
     n as usize
 }
 
-#[flux::trusted]
-#[flux::sig(fn (&RVec<T>) -> usize{v:0<=v})]
+#[trusted]
+#[sig(fn (&RVec<T>) -> usize{v:0<=v})]
 pub fn raw_ptr<T>(_v: &RVec<T>) -> usize {
     unimplemented!()
 }
 
-#[flux::trusted]
-#[flux::sig(fn (n:usize{n < LINEAR_MEM_SIZE}) -> u32[n])]
+#[trusted]
+#[sig(fn (n:usize{n < LINEAR_MEM_SIZE}) -> u32[n])]
 pub fn usize_as_u32(n: usize) -> u32 {
     n as u32
 }
 
 // FLUX-TODO2: index-without-wrapper: This is a workaround for the fact that we can't index types that we didn't define.
 
-#[flux::opaque]
-#[flux::refined_by(port: int, addr: int)]
+#[opaque]
+#[refined_by(port: int, addr: int)]
 pub struct SockAddr {
     pub inner: libc::sockaddr_in,
 }
@@ -1218,7 +1219,7 @@ pub fn stat_mode(stat: libc::stat) -> mode_t {
     stat.st_mode
 }
 
-// #[flux::sig(fn (x:i32) -> i32[x])]
+// #[sig(fn (x:i32) -> i32[x])]
 // fn inc(x: i32) -> i32 {
 //     x + 1
 // }

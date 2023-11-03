@@ -1,6 +1,7 @@
 use crate::rvec::RVec;
 use crate::tcb::path::*;
 use crate::types::*;
+use flux_rs::*;
 use std::ffi::OsString;
 use std::os::unix::ffi::OsStringExt;
 use std::path::PathBuf;
@@ -11,7 +12,7 @@ fn to_pathbuf(v: RVec<u8>) -> PathBuf {
     PathBuf::from(OsString::from_vec(v.to_vec()))
 }
 
-#[flux::sig(fn(RVec<u8>, should_follow:bool, HostFd) -> Result<LastSymLink(should_follow), RuntimeError>)]
+#[sig(fn(RVec<u8>, should_follow:bool, HostFd) -> Result<LastSymLink(should_follow), RuntimeError>)]
 fn expand_path(
     vec: RVec<u8>,
     should_follow: bool,
@@ -47,7 +48,7 @@ fn expand_path(
     Ok(out_path)
 }
 
-#[flux::sig(fn(RVec<u8>, should_follow:bool, HostFd) -> Result<HostPathSafe(should_follow), RuntimeError>)]
+#[sig(fn(RVec<u8>, should_follow:bool, HostFd) -> Result<HostPathSafe(should_follow), RuntimeError>)]
 pub fn resolve_path(
     path: RVec<u8>,
     should_follow: bool,
@@ -75,7 +76,7 @@ pub fn resolve_path(
 
 // Recursively expands a symlink (without explicit recursion)
 // maintains a queue of path components to process
-#[flux::sig(fn(out_path: &mut NoSymLinks, linkpath: FOwnedComponents, num_symlinks: &mut isize, HostFd))]
+#[sig(fn(out_path: &mut NoSymLinks, linkpath: FOwnedComponents, num_symlinks: &mut isize, HostFd))]
 fn expand_symlink(
     out_path: &mut NoSymLinks,
     linkpath_components: FOwnedComponents,

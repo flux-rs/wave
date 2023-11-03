@@ -18,6 +18,7 @@ use crate::verifier_interface::{push_syscall_result, start_timer, stop_timer};
 // use prusti_contracts::*;
 // use syscall::syscall;
 // use wave_macros::{external_call, external_method, with_ghost_var};
+use flux_rs::*;
 
 use libc::{c_int, stat, timespec};
 use paste::paste;
@@ -28,7 +29,7 @@ syscall_spec_gen! {
     // requires((buf.len() >= cnt));
     // ensures((effects!(old(trace), trace, effect!(FdAccess), effect!(WriteMem, addr, count) if addr == old(raw_ptr(buf)) && count == cnt)));
     // ensures((old(raw_ptr(buf)) == raw_ptr(buf)));
-    sig(flux::sig(fn(fd: usize, buf: BSlice, cnt: usize{buf.len >= cnt}, offset: usize) -> isize requires WriteMem(buf.base, buf.addr, cnt)));
+    sig(sig(fn(fd: usize, buf: BSlice, cnt: usize{buf.len >= cnt}, offset: usize) -> isize requires WriteMem(buf.base, buf.addr, cnt)));
     syscall(pread64 ALIAS pread, fd: usize, buf: BSlice, cnt: usize, offset: usize)
 }
 /* FLUX-TODO
@@ -45,7 +46,7 @@ syscall_spec_gen! {
 syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace, effect!(FdAccess))));
-    sig(flux::sig(fn (fd: usize, offset: i64, len: i64, advice: i32) -> isize requires FdAccess()));
+    sig(sig(fn (fd: usize, offset: i64, len: i64, advice: i32) -> isize requires FdAccess()));
     syscall(fadvise64, fd: usize, offset: i64, len: i64, advice: i32)
 }
 
@@ -54,7 +55,7 @@ syscall_spec_gen! {
 syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace, effect!(FdAccess))));
-    sig(flux::sig(fn (fd: usize, mode: i32, offset: i64, len: i64) -> isize requires FdAccess()));
+    sig(sig(fn (fd: usize, mode: i32, offset: i64, len: i64) -> isize requires FdAccess()));
     syscall(fallocate, fd: usize, mode: i32, offset: i64, len: i64)
 }
 
@@ -64,16 +65,16 @@ syscall_spec_gen! {
 syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace, effect!(FdAccess), path_effect!(PathAccessAt, fd, p, f) if fd == dirfd && p == old(path) && f == !flag_set(flags, libc::AT_SYMLINK_NOFOLLOW))));
-    sig(flux::sig(fn(ctx: &VmCtx[@cx], dirfd: usize, path: HostPathSafe(!flag_set(flags, AT_SYMLINK_NOFOLLOW)), stat: &mut stat, flags: i32) -> isize requires PathAccessAt(dirfd, cx.homedir_host_fd)));
+    sig(sig(fn(ctx: &VmCtx[@cx], dirfd: usize, path: HostPathSafe(!flag_set(flags, AT_SYMLINK_NOFOLLOW)), stat: &mut stat, flags: i32) -> isize requires PathAccessAt(dirfd, cx.homedir_host_fd)));
     syscall_with_cx(newfstatat ALIAS fstatat, dirfd: usize, path: HostPathSafe, stat: (&mut stat), flags: i32)
 }
 
 //https://man7.org/linux/man-pages/man2/utimensat.2.html
 // #[with_ghost_var(trace: &mut Trace)]
 // #[requires(specs.len() >= 2)]
-#[flux::trusted]
+#[trusted]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-#[flux::sig(fn(fd: usize, specs: &RVec<timespec>{len : 2 <= len}) -> isize requires FdAccess())]
+#[sig(fn(fd: usize, specs: &RVec<timespec>{len : 2 <= len}) -> isize requires FdAccess())]
 pub fn os_futimens(fd: usize, specs: &RVec<timespec>) -> isize {
     let __start_ts = start_timer();
     // Linux impls futimens as UTIMENSAT with null path
@@ -90,7 +91,7 @@ syscall_spec_gen! {
     // trace;
     // requires((specs.len() >= 2));
     // ensures((effects!(old(trace), trace, effect!(FdAccess), path_effect!(PathAccessAt, fd, p, f) if fd == dirfd && p == old(path) && f == !flag_set(flags, libc::AT_SYMLINK_NOFOLLOW))));
-    sig(flux::sig(fn (ctx: &VmCtx[@cx], dirfd: usize, path: HostPathSafe(!flag_set(flags, AT_SYMLINK_NOFOLLOW)), specs: &RVec<timespec>{len : 2 <= len}, flags: i32) -> isize requires PathAccessAt(dirfd, cx.homedir_host_fd)));
+    sig(sig(fn (ctx: &VmCtx[@cx], dirfd: usize, path: HostPathSafe(!flag_set(flags, AT_SYMLINK_NOFOLLOW)), specs: &RVec<timespec>{len : 2 <= len}, flags: i32) -> isize requires PathAccessAt(dirfd, cx.homedir_host_fd)));
     syscall_with_cx(utimensat, dirfd: usize, path: HostPathSafe, specs: (&RVec<timespec>), flags: i32)
 }
 
@@ -113,7 +114,7 @@ syscall_spec_gen! {
     // requires((buf.len() >= cnt));
     // ensures((effects!(old(trace), trace, effect!(WriteMem, addr, count) if addr == old(raw_ptr(buf)) && count == cnt)));
     // ensures((old(raw_ptr(buf)) == raw_ptr(buf)));
-    sig(flux::sig(fn (buf: BSlice, cnt: usize{buf.len >= cnt}, flags: u32) -> isize requires WriteMem(buf.base, buf.addr, cnt)));
+    sig(sig(fn (buf: BSlice, cnt: usize{buf.len >= cnt}, flags: u32) -> isize requires WriteMem(buf.base, buf.addr, cnt)));
     syscall(getrandom, buf: BSlice, cnt: usize, flags: u32)
 }
 
@@ -127,10 +128,10 @@ syscall_spec_gen! {
 //https://man7.org/linux/man-pages/man2/getdents64.2.html
 // #[with_ghost_var(trace: &mut Trace)]
 // #[external_method(set_len)]
-#[flux::trusted]
+#[trusted]
 // #[requires(dirp.capacity() >= count)]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-#[flux::sig(fn(fd: usize, dirp: &mut RVec<u8>[@capacity], count: usize{capacity >= count}) -> isize)]
+#[sig(fn(fd: usize, dirp: &mut RVec<u8>[@capacity], count: usize{capacity >= count}) -> isize)]
 pub fn os_getdents64(fd: usize, dirp: &mut RVec<u8>, count: usize) -> isize {
     let __start_ts = start_timer();
     let result = unsafe {
