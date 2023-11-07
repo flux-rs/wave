@@ -46,3 +46,8 @@ pub mod verifier_interface;
 pub mod wasm2c_frontend;
 mod wrappers;
 mod writeback;
+
+// #[flux_rs::sig(fn(x: i32) -> i32[x + 1])]
+// fn test(x: i32) -> i32 {
+//     x + 2
+// }

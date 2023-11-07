@@ -40,3 +40,5 @@ verify = ["wave-macros/enable"] # feature for when we're verifying
 time_syscalls = []
 time_hostcalls = []
 
+[package.metadata.flux]
+enabled = true
