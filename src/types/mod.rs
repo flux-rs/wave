@@ -54,7 +54,7 @@ pub const AF_INET: i32 = libc::AF_INET;
 
 pub type RuntimeResult<T> = Result<T, RuntimeError>;
 
-#[alias(type SboxPtr[n: int] = u32[@n])]
+#[alias(type SboxPtr[n: int] = u32[n])]
 pub type SboxPtr = u32;
 pub type HostPtr = usize;
 
@@ -186,7 +186,7 @@ pub struct Dirent {
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[refined_by(iov_base: int)]
 pub struct WasmIoVec {
-    #[field({ u32[@iov_base] | 0 <= iov_base})]
+    #[field({ u32[iov_base] | 0 <= iov_base})]
     pub iov_base: u32,
     #[field(u32{ len : 0 <= len && iov_base <= iov_base + len && iov_base + len < LINEAR_MEM_SIZE })]
     pub iov_len: u32,
@@ -196,9 +196,9 @@ pub struct WasmIoVec {
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[refined_by(iov_base: int, iov_len: int)]
 pub struct NativeIoVec {
-    #[field(usize[@iov_base])]
+    #[field(usize[iov_base])]
     pub iov_base: usize,
-    #[field(usize[@iov_len])]
+    #[field(usize[iov_len])]
     pub iov_len: usize,
 }
 
@@ -222,7 +222,7 @@ macro_rules! unwrap_result {
     };
 }
 
-#[alias(type SboxFd[n: int] = u32[@n])]
+#[alias(type SboxFd[n: int] = u32[n])]
 pub type SboxFd = u32;
 
 #[alias(type SboxFdSafe = SboxFd{v: v < MAX_SBOX_FDS})]
@@ -234,9 +234,9 @@ pub struct FdMap {
     pub m: RVec<Result<HostFd, RuntimeError>>,
     #[field(RVec< Result<WasiProto, RuntimeError> >[MAX_SBOX_FDS])]
     pub sockinfo: RVec<Result<WasiProto, RuntimeError>>,
-    #[field(RVec<SboxFd{v:v < MAX_SBOX_FDS}>[@reserve_len])]
+    #[field(RVec<SboxFd{v:v < MAX_SBOX_FDS}>[reserve_len])]
     pub reserve: RVec<SboxFd>,
-    #[field(SboxFd[@counter])]
+    #[field(SboxFd[counter])]
     pub counter: SboxFd,
 }
 
@@ -264,7 +264,7 @@ impl WasiProto {
 
 #[refined_by(arg_buf: int, env_buf: int, base: int, homedir_host_fd: int, net: int)]
 pub struct VmCtx {
-    #[field(usize[@base])]
+    #[field(usize[base])]
     pub ghost_raw: usize,
     #[field(RVec<u8>[LINEAR_MEM_SIZE])]
     pub mem: RVec<u8>,
@@ -272,24 +272,24 @@ pub struct VmCtx {
     pub memlen: usize,
     pub fdmap: FdMap,
     pub homedir: String,
-    #[field(HostFd[@homedir_host_fd])]
+    #[field(HostFd[homedir_host_fd])]
     pub homedir_host_fd: HostFd,
-    #[field({RVec<u8>[@arg_buf] | arg_buf < TWO_POWER_20 } )]
+    #[field({RVec<u8>[arg_buf] | arg_buf < TWO_POWER_20 } )]
     pub arg_buffer: RVec<u8>,
-    #[field({ RVec<u8>[@env_buf] | env_buf < TWO_POWER_20 })]
+    #[field({ RVec<u8>[env_buf] | env_buf < TWO_POWER_20 })]
     pub env_buffer: RVec<u8>,
     #[field(usize{v: v < 1024})]
     pub envc: usize,
     #[field(usize{v: v < 1024})]
     pub argc: usize,
-    #[field(Netlist[@net])]
+    #[field(Netlist[net])]
     pub netlist: Netlist,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[refined_by(raw: int)]
 pub struct HostFd {
-    #[field(usize[@raw])]
+    #[field(usize[raw])]
     pub raw: usize,
 }
 
@@ -614,7 +614,7 @@ impl From<libc::stat> for FileStat {
 
 #[refined_by(flags:int)]
 pub struct LookupFlags {
-    #[field(u32[@flags])]
+    #[field(u32[flags])]
     flags: u32,
 }
 
