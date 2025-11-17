@@ -1,6 +1,26 @@
 #![allow(macro_expanded_macro_exports_accessed_by_absolute_paths)]
 #![allow(unused_comparisons)]
 
+mod fdmap;
+mod iov;
+pub mod lucet_frontend;
+mod os;
+mod path_resolution;
+mod poll;
+pub mod runtime;
+pub mod rvec;
+pub mod stats;
+pub mod tcb;
+mod tests;
+pub mod types;
+pub mod verifier_interface;
+pub mod wasm2c_frontend;
+mod wrappers;
+mod writeback;
+
+#[cfg(flux)]
+use types::{AF_INET, LINEAR_MEM_SIZE, SOCK_DGRAM, SOCK_STREAM};
+
 flux_rs::defs! {
     local qualifier MyQ1(x: int, y: int, a: int) { x + y <= a + LINEAR_MEM_SIZE }
     fn fits_in_lin_mem_base(base:int, addr: int, count: int) -> bool {
@@ -22,32 +42,9 @@ flux_rs::defs! {
     }
     fn WriteMem(base:int, addr:int, count: int) -> bool { fits_in_lin_mem_base(base, addr, count) }
     fn ReadMem(base:int, addr:int, count: int) -> bool { fits_in_lin_mem_base(base, addr, count) }
-    fn ReadMem(base:int, addr:int, count: int) -> bool { fits_in_lin_mem_base(base, addr, count) }
     fn Shutdown() -> bool { true }
     fn FdAccess() -> bool { true }
     fn PathAccessAt(dirfd: int, homedir_host_fd: int) -> bool { dirfd == homedir_host_fd }
     fn SockCreation(domain: int, ty: int) -> bool { domain == AF_INET && (ty == SOCK_STREAM || ty == SOCK_DGRAM) }
     fn NetAccess(net:int, addr:int, port:int) -> bool { addr_in_netlist(net, addr, port) }
 }
-
-mod fdmap;
-mod iov;
-pub mod lucet_frontend;
-mod os;
-mod path_resolution;
-mod poll;
-pub mod runtime;
-pub mod rvec;
-pub mod stats;
-pub mod tcb;
-mod tests;
-pub mod types;
-pub mod verifier_interface;
-pub mod wasm2c_frontend;
-mod wrappers;
-mod writeback;
-
-// #[flux_rs::sig(fn(x: i32) -> i32[x + 1])]
-// fn test(x: i32) -> i32 {
-//     x + 2
-// }

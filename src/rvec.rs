@@ -157,6 +157,7 @@ impl<T> Iterator for RVecIter<T> {
     }
 }
 
+#[trusted_impl]
 impl<T> std::ops::Index<usize> for RVec<T> {
     type Output = T;
 
@@ -166,6 +167,7 @@ impl<T> std::ops::Index<usize> for RVec<T> {
     }
 }
 
+#[trusted_impl]
 impl<T> std::ops::IndexMut<usize> for RVec<T> {
     #[sig(fn(&mut RVec<T>[@n], usize{v : 0 <= v && v < n}) -> &mut T)]
     fn index_mut(&mut self, index: usize) -> &mut T {

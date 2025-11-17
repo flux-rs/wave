@@ -4,7 +4,7 @@ use owned_components::{readlinkat, OwnedComponent, OwnedComponents};
 
 use crate::{
     rvec::RVec,
-    types::{HostFd, Netlist},
+    types::{HostFd, Netlist, LINEAR_MEM_SIZE},
 };
 use flux_rs::*;
 

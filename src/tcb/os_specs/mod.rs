@@ -5,7 +5,7 @@ use crate::{
     rvec::{BSlice, RVec},
     types::{NativeIoVec, NativeIoVecOk, SockAddr, VmCtx},
 };
-use libc::{c_int, mode_t, stat, timespec};
+use libc::{c_int, mode_t, stat, timespec, AT_SYMLINK_FOLLOW, O_NOFOLLOW};
 // use crate::tcb::misc::flag_set;
 // use crate::tcb::sbox_mem::raw_ptr;
 // use crate::tcb::verifier::*;

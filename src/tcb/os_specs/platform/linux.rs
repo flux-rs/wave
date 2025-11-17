@@ -20,7 +20,7 @@ use crate::verifier_interface::{push_syscall_result, start_timer, stop_timer};
 // use wave_macros::{external_call, external_method, with_ghost_var};
 use flux_rs::*;
 
-use libc::{c_int, stat, timespec};
+use libc::{c_int, stat, timespec, AT_SYMLINK_NOFOLLOW};
 use paste::paste;
 
 //https://man7.org/linux/man-pages/man2/pread.2.html

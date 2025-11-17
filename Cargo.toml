@@ -16,7 +16,7 @@ trace = "*"
 wave-macros = { path = "wave-macros"}
 owned-components = { path = "owned-components"}
 paste = "1.0" # used in syscall function generation
-flux-rs = { git = "https://github.com/flux-rs/flux.git" }
+flux-rs = { git = "https://github.com/flux-rs/flux.git", rev = "3e7f804ae60f28913726ea9dbf9e54b61387e62f"}
 
 # Used for debugging
 log = "0.4.14"
@@ -42,3 +42,6 @@ time_hostcalls = []
 
 [package.metadata.flux]
 enabled = true
+
+[workspace.lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(flux)'] }
