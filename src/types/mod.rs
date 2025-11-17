@@ -22,34 +22,23 @@ use flux_rs::*;
 use libc::mode_t;
 pub use platform::*;
 
-#[constant]
 pub const LINEAR_MEM_SIZE: usize = 4294965096; //4GB
 
-#[constant]
 pub const HOMEDIR_FD: SboxFd = 3; //4GB
 
-#[constant]
 pub const TWO_POWER_20: usize = 1024 * 1024;
 
-#[constant]
 pub const PATH_MAX: usize = 4096;
 
-#[constant]
 pub const MAX_SBOX_FDS: u32 = 8; // up to 16 or 32?
 
 // FLUX-TODO2: extern-const
-#[constant]
 pub const AT_SYMLINK_NOFOLLOW: i32 = libc::AT_SYMLINK_NOFOLLOW;
-#[constant]
 pub const AT_SYMLINK_FOLLOW: i32 = libc::AT_SYMLINK_FOLLOW;
-#[constant]
 pub const O_NOFOLLOW: i32 = libc::O_NOFOLLOW;
 
-#[constant]
 pub const SOCK_STREAM: i32 = libc::SOCK_STREAM;
-#[constant]
 pub const SOCK_DGRAM: i32 = libc::SOCK_DGRAM;
-#[constant]
 pub const AF_INET: i32 = libc::AF_INET;
 
 pub type RuntimeResult<T> = Result<T, RuntimeError>;

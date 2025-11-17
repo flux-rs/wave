@@ -8,7 +8,6 @@ use crate::{
 };
 use flux_rs::*;
 
-#[constant]
 const DEPTH_ERR: isize = i32::MIN as isize;
 
 #[allow(dead_code)]
