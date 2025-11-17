@@ -69,7 +69,7 @@ syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace, effect!(FdAccess), path_effect!(PathAccessAt, fd, p, f) if fd == dirfd && p == old(path) && f == !flag_set(flags, libc::AT_SYMLINK_NOFOLLOW))));
     sig(sig(fn(ctx: &VmCtx[@cx], dirfd: usize, path: HostPathSafe(!flag_set(flags, AT_SYMLINK_NOFOLLOW)), stat: &mut stat, flags: i32) -> isize requires PathAccessAt(dirfd, cx.homedir_host_fd)));
-    syscall_with_cx(newfstatat ALIAS fstatat, dirfd: usize, path: HostPathSafe, stat: (&mut stat), flags: i32)
+    syscall_with_cx(newfstatat ALIAS fstatat, dirfd: usize, path: HostPathSafe, stat: &mut stat, flags: i32)
 }
 
 //https://man7.org/linux/man-pages/man2/utimensat.2.html
@@ -95,21 +95,21 @@ syscall_spec_gen! {
     // requires((specs.len() >= 2));
     // ensures((effects!(old(trace), trace, effect!(FdAccess), path_effect!(PathAccessAt, fd, p, f) if fd == dirfd && p == old(path) && f == !flag_set(flags, libc::AT_SYMLINK_NOFOLLOW))));
     sig(sig(fn (ctx: &VmCtx[@cx], dirfd: usize, path: HostPathSafe(!flag_set(flags, AT_SYMLINK_NOFOLLOW)), specs: &RVec<timespec>{len : 2 <= len}, flags: i32) -> isize requires PathAccessAt(dirfd, cx.homedir_host_fd)));
-    syscall_with_cx(utimensat, dirfd: usize, path: HostPathSafe, specs: (&RVec<timespec>), flags: i32)
+    syscall_with_cx(utimensat, dirfd: usize, path: HostPathSafe, specs: &RVec<timespec>, flags: i32)
 }
 
 //https://man7.org/linux/man-pages/man2/clock_gettime.2.html
 syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace)));
-    syscall(clock_gettime, clock_id: (libc::clockid_t), spec: (&mut libc::timespec))
+    syscall(clock_gettime, clock_id: libc::clockid_t, spec: &mut libc::timespec)
 }
 
 //https://man7.org/linux/man-pages/man2/clock_getres.2.html
 syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace)));
-    syscall(clock_getres, clock_id: (libc::clockid_t), spec: (&mut libc::timespec))
+    syscall(clock_getres, clock_id: libc::clockid_t, spec: &mut libc::timespec)
 }
 
 syscall_spec_gen! {
@@ -125,7 +125,7 @@ syscall_spec_gen! {
 syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace)));
-    syscall(nanosleep, req: (&libc::timespec), rem: (&mut libc::timespec))
+    syscall(nanosleep, req: &libc::timespec, rem: &mut libc::timespec)
 }
 
 //https://man7.org/linux/man-pages/man2/getdents64.2.html
@@ -156,5 +156,5 @@ pub fn os_getdents64(fd: usize, dirp: &mut RVec<u8>, count: usize) -> isize {
 syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace, effect!(FdAccess))));
-    syscall(fstat, fd: usize, stat: (&mut libc::stat))
+    syscall(fstat, fd: usize, stat: &mut libc::stat)
 }

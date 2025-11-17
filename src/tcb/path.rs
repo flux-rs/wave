@@ -2,11 +2,11 @@ use std::path::PathBuf;
 
 use owned_components::{readlinkat, OwnedComponent, OwnedComponents};
 
-use crate::{
-    rvec::RVec,
-    types::{HostFd, Netlist, LINEAR_MEM_SIZE},
-};
+use crate::{rvec::RVec, types::HostFd};
 use flux_rs::*;
+
+#[cfg(flux)]
+use crate::types::LINEAR_MEM_SIZE;
 
 const DEPTH_ERR: isize = i32::MIN as isize;
 

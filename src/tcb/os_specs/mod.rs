@@ -5,7 +5,10 @@ use crate::{
     rvec::{BSlice, RVec},
     types::{NativeIoVecOk, SockAddr, VmCtx},
 };
-use libc::{c_int, mode_t, AT_SYMLINK_FOLLOW, O_NOFOLLOW};
+use libc::{c_int, mode_t};
+
+#[cfg(flux)]
+use libc::{AT_SYMLINK_FOLLOW, O_NOFOLLOW};
 
 // use crate::tcb::verifier::*;
 // use crate::types::NativeIoVec;
@@ -60,10 +63,114 @@ macro_rules! arg_converter {
     };
 }
 
+trait SyscallArg {
+    type Raw;
+    fn into_raw(self) -> Self::Raw;
+}
+
+#[trusted]
+impl<T> SyscallArg for &RVec<T> {
+    type Raw = *const T;
+    fn into_raw(self) -> *const T {
+        self.inner.as_ptr()
+    }
+}
+
+#[trusted]
+impl SyscallArg for BSlice<'_> {
+    type Raw = *const u8;
+    fn into_raw(self) -> Self::Raw {
+        self.inner.as_ptr()
+    }
+}
+
+#[trusted]
+impl<T> SyscallArg for &mut RVec<T> {
+    type Raw = *mut T;
+    fn into_raw(self) -> *mut T {
+        self.inner.as_mut_ptr()
+    }
+}
+
+impl SyscallArg for i32 {
+    type Raw = i32;
+    fn into_raw(self) -> i32 {
+        self
+    }
+}
+
+impl SyscallArg for usize {
+    type Raw = usize;
+    fn into_raw(self) -> usize {
+        self
+    }
+}
+
+impl SyscallArg for u32 {
+    type Raw = u32;
+    fn into_raw(self) -> u32 {
+        self
+    }
+}
+
+impl SyscallArg for i64 {
+    type Raw = i64;
+    fn into_raw(self) -> i64 {
+        self
+    }
+}
+
+impl SyscallArg for u64 {
+    type Raw = u64;
+    fn into_raw(self) -> u64 {
+        self
+    }
+}
+
+#[trusted]
+impl SyscallArg for HostPathSafe {
+    type Raw = *const u8;
+    fn into_raw(self) -> *const u8 {
+        self.inner.as_ptr()
+    }
+}
+
+#[trusted]
+impl SyscallArg for &SockAddr {
+    type Raw = *const libc::sockaddr_in;
+    fn into_raw(self) -> Self::Raw {
+        &self.inner as *const libc::sockaddr_in
+    }
+}
+
+impl SyscallArg for &mut libc::stat {
+    type Raw = *mut libc::stat;
+
+    fn into_raw(self) -> Self::Raw {
+        self as *mut libc::stat
+    }
+}
+
+impl SyscallArg for &mut libc::timespec {
+    type Raw = *mut libc::timespec;
+
+    fn into_raw(self) -> Self::Raw {
+        self as *mut libc::timespec
+    }
+}
+
+impl SyscallArg for &libc::timespec {
+    type Raw = *const libc::timespec;
+
+    fn into_raw(self) -> Self::Raw {
+        self as *const libc::timespec
+    }
+}
+
 #[macro_export]
 macro_rules! syscall_spec_gen {
     {   sig($sig:meta);
-        syscall($name:ident, $($arg:ident: $type:tt),*)
+        syscall($name:ident, $($arg:ident: $type:ty),*)
     } => {
         paste! {
             // #[with_ghost_var($tr: &mut Trace)]
@@ -72,21 +179,23 @@ macro_rules! syscall_spec_gen {
             #[flux_rs::trusted]
             #[$sig]
             pub fn [<os_ $name>]($($arg: $type),*) -> isize {
+                use $crate::tcb::os_specs::SyscallArg;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall::syscall!([<$name:upper>], $($crate::arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall::syscall!([<$name:upper>], $(SyscallArg::into_raw($arg)),*) as isize };
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;
             }
         }
     };
-    { syscall($name:ident, $($arg:ident: $type:tt),*)
+    { syscall($name:ident, $($arg:ident: $type:ty),*)
     } => {
         paste! {
             #[flux_rs::trusted]
             pub fn [<os_ $name>]($($arg: $type),*) -> isize {
+                use $crate::tcb::os_specs::SyscallArg;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall::syscall!([<$name:upper>], $($crate::arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall::syscall!([<$name:upper>], $(SyscallArg::into_raw($arg)),*) as isize };
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;
@@ -96,7 +205,7 @@ macro_rules! syscall_spec_gen {
     {   // $tr:ident;
         // $(requires($pre:tt);)*
         // $(ensures($post:tt);)*
-        syscall($name:ident ALIAS $os_name:ident, $($arg:ident: $type:tt),*)
+        syscall($name:ident ALIAS $os_name:ident, $($arg:ident: $type:ty),*)
     } => {
         paste! {
             #[flux_rs::trusted]
@@ -104,9 +213,9 @@ macro_rules! syscall_spec_gen {
             // $(#[requires($pre)])*
             // $(#[ensures($post)])*
             pub fn [<os_ $os_name>]($($arg: $type),*) -> isize {
-                use $crate::arg_converter;
+                use $crate::tcb::os_specs::SyscallArg;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall!([<$name:upper>], $(arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall!([<$name:upper>], $(Syscallarg::into_raw($arg)),*) as isize };
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;
@@ -117,7 +226,7 @@ macro_rules! syscall_spec_gen {
         // $(requires($pre:tt);)*
         // $(ensures($post:tt);)*
         sig($sig:meta);
-        syscall($name:ident ALIAS $os_name:ident, $($arg:ident: $type:tt),*)
+        syscall($name:ident ALIAS $os_name:ident, $($arg:ident: $type:ty),*)
     } => {
         paste! {
             #[flux_rs::trusted]
@@ -126,9 +235,9 @@ macro_rules! syscall_spec_gen {
             // $(#[requires($pre)])*
             // $(#[ensures($post)])*
             pub fn [<os_ $os_name>]($($arg: $type),*) -> isize {
-                use $crate::arg_converter;
+                use $crate::tcb::os_specs::SyscallArg;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall::syscall!([<$name:upper>], $(arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall::syscall!([<$name:upper>], $(SyscallArg::into_raw($arg)),*) as isize };
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;
@@ -137,7 +246,7 @@ macro_rules! syscall_spec_gen {
     };
     // syscall_with_cx (duplicate here)
     {   sig($sig:meta);
-        syscall_with_cx($name:ident, $($arg:ident: $type:tt),*)
+        syscall_with_cx($name:ident, $($arg:ident: $type:ty),*)
     } => {
         paste! {
             // #[with_ghost_var($tr: &mut Trace)]
@@ -146,21 +255,23 @@ macro_rules! syscall_spec_gen {
             #[flux_rs::trusted]
             #[$sig]
             pub fn [<os_ $name>](_cx: &VmCtx, $($arg: $type),*) -> isize {
+                use $crate::tcb::os_specs::SyscallArg;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall::syscall!([<$name:upper>], $($crate::arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall::syscall!([<$name:upper>], $(SyscallArg::into_raw($arg)),*) as isize};
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;
             }
         }
     };
-    { syscall_with_cx($name:ident, $($arg:ident: $type:tt),*)
+    { syscall_with_cx($name:ident, $($arg:ident: $type:ty),*)
     } => {
         paste! {
             #[flux_rs::trusted]
             pub fn [<os_ $name>](_cx: &VmCtx, $($arg: $type),*) -> isize {
+                use $crate::tcb::os_specs::SyscallArg;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall!([<$name:upper>], $($crate::arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall!([<$name:upper>], $(SyscallArg::into_raw($arg)),*) as isize };
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;
@@ -170,7 +281,7 @@ macro_rules! syscall_spec_gen {
     {   // $tr:ident;
         // $(requires($pre:tt);)*
         // $(ensures($post:tt);)*
-        syscall_with_cx($name:ident ALIAS $os_name:ident, $($arg:ident: $type:tt),*)
+        syscall_with_cx($name:ident ALIAS $os_name:ident, $($arg:ident: $type:ty),*)
     } => {
         paste! {
             #[flux_rs::trusted]
@@ -178,9 +289,9 @@ macro_rules! syscall_spec_gen {
             // $(#[requires($pre)])*
             // $(#[ensures($post)])*
             pub fn [<os_ $os_name>](_cx: &VmCtx, $($arg: $type),*) -> isize {
-                use $crate::arg_converter;
+                use $crate::tcb::os_specs::SyscallArg;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall!([<$name:upper>], $(arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall!([<$name:upper>], $(SyscallArg::into_raw($arg)),*) as isize };
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;
@@ -191,7 +302,7 @@ macro_rules! syscall_spec_gen {
         // $(requires($pre:tt);)*
         // $(ensures($post:tt);)*
         sig($sig:meta);
-        syscall_with_cx($name:ident ALIAS $os_name:ident, $($arg:ident: $type:tt),*)
+        syscall_with_cx($name:ident ALIAS $os_name:ident, $($arg:ident: $type:ty),*)
     } => {
         paste! {
             #[flux_rs::trusted]
@@ -200,9 +311,9 @@ macro_rules! syscall_spec_gen {
             // $(#[requires($pre)])*
             // $(#[ensures($post)])*
             pub fn [<os_ $os_name>](_cx: &VmCtx, $($arg: $type),*) -> isize {
-                use $crate::arg_converter;
+                use $crate::tcb::os_specs::SyscallArg;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall::syscall!([<$name:upper>], $(arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall::syscall!([<$name:upper>], $(SyscallArg::into_raw($arg)),*) as isize };
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;
@@ -251,7 +362,7 @@ syscall_spec_gen! {
     // }
     // ));
     sig(sig(fn (ctx: &VmCtx[@cx], fd: usize, buf: &RVec<NativeIoVecOk(cx.base)>, iovcnt: usize) -> isize));
-    syscall_with_cx(readv, fd: usize, buf: (&RVec<NativeIoVecOk>), iovcnt: usize)
+    syscall_with_cx(readv, fd: usize, buf: &RVec<NativeIoVecOk>, iovcnt: usize)
 }
 
 syscall_spec_gen! {
@@ -280,7 +391,7 @@ syscall_spec_gen! {
     //     )
     // ));
     sig(sig(fn (ctx: &VmCtx[@cx], fd: usize, buf: &RVec<NativeIoVecOk(cx.base)>, iovcnt: usize) -> isize));
-    syscall_with_cx(writev, fd: usize, buf: (&RVec<NativeIoVecOk>), iovcnt: usize)
+    syscall_with_cx(writev, fd: usize, buf: &RVec<NativeIoVecOk>, iovcnt: usize)
 }
 
 syscall_spec_gen! {
@@ -302,7 +413,7 @@ syscall_spec_gen! {
     // ));
 
     sig(sig(fn (ctx: &VmCtx[@cx], fd: usize, buf: &RVec<NativeIoVecOk(cx.base)>, iovcnt: usize, offset: usize) -> isize));
-    syscall_with_cx(preadv, fd: usize, buf: (&RVec<NativeIoVecOk>), iovcnt: usize, offset: usize)
+    syscall_with_cx(preadv, fd: usize, buf: &RVec<NativeIoVecOk>, iovcnt: usize, offset: usize)
 }
 
 syscall_spec_gen! {
@@ -324,7 +435,7 @@ syscall_spec_gen! {
     // ));
 
     sig(sig(fn (ctx: &VmCtx[@cx], fd: usize, buf: &RVec<NativeIoVecOk(cx.base)>, iovcnt: usize, offset: usize) -> isize));
-    syscall_with_cx(pwritev, fd: usize, buf: (&RVec<NativeIoVecOk>), iovcnt: usize, offset: usize)
+    syscall_with_cx(pwritev, fd: usize, buf: &RVec<NativeIoVecOk>, iovcnt: usize, offset: usize)
 }
 
 syscall_spec_gen! {
@@ -360,7 +471,7 @@ syscall_spec_gen! {
 syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace, effect!(FdAccess))));
-    syscall(ftruncate, fd: usize, length: (libc::off_t))
+    syscall(ftruncate, fd: usize, length: libc::off_t)
 }
 
 syscall_spec_gen! {
@@ -448,14 +559,14 @@ syscall_spec_gen! {
 syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace, effect!(Shutdown), effect!(FdAccess))));
-    syscall(shutdown, fd: usize, how: (libc::c_int))
+    syscall(shutdown, fd: usize, how: libc::c_int)
 }
 
 //https://man7.org/linux/man-pages/man2/poll.2.html
 syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace, effect!(FdAccess))));
-    syscall(poll, pollfds: (&mut RVec<libc::pollfd>), timeout: (libc::c_int))
+    syscall(poll, pollfds: &mut RVec<libc::pollfd>, timeout: libc::c_int)
 }
 
 //https://man7.org/linux/man-pages/man2/socket.2.html
@@ -471,12 +582,12 @@ syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace, effect!(FdAccess), effect!(NetAccess, protocol, ip, port) if ip == addr.sin_addr.s_addr as usize && port == addr.sin_port as usize)));
     sig(sig(fn (ctx: &VmCtx[@cx], sockfd: usize, addr: &SockAddr[@saddr], addrlen: u32) -> isize requires FdAccess() && NetAccess(cx.net, saddr.addr, saddr.port)));
-    syscall_with_cx(connect, sockfd: usize, addr: (&SockAddr), addrlen: u32)
+    syscall_with_cx(connect, sockfd: usize, addr: &SockAddr, addrlen: u32)
 }
 
 //https://man7.org/linux/man-pages/man2/ioctl.2.html
 syscall_spec_gen! {
     // trace;
     // ensures((effects!(old(trace), trace, effect!(FdAccess))));
-    syscall(ioctl, fd: usize, request: (libc::c_ulong))
+    syscall(ioctl, fd: usize, request: libc::c_ulong)
 }
