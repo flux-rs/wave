@@ -72,7 +72,7 @@ impl VmCtx {
 
     #[trusted]
     #[sig(fn(self: &mut VmCtx[@cx], ptr: SboxPtr, len: u32{fits_in_lin_mem(ptr, len)}) -> BSlice[cx.base, cx.base + ptr, len])]
-    pub fn rslice_mem_mut(&mut self, ptr: SboxPtr, len: u32) -> BSlice {
+    pub fn rslice_mem_mut(&mut self, ptr: SboxPtr, len: u32) -> BSlice<'_> {
         let start = ptr as usize;
         let end = ptr as usize + len as usize;
         BSlice {

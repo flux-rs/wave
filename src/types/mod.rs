@@ -3,8 +3,8 @@ use std::convert::TryFrom;
 use crate::{
     rvec::RVec,
     tcb::misc::{
-        as_u16, as_u32, bitwise_and, bitwise_and_i16, bitwise_and_u16, bitwise_and_u32,
-        bitwise_and_u64, bitwise_or, nth_bit_set, nth_bit_set_u32, with_nth_bit_set,
+        as_u16, as_u32, bitwise_and_i16, bitwise_and_u16, bitwise_and_u32, bitwise_and_u64,
+        bitwise_or, nth_bit_set, nth_bit_set_u32, with_nth_bit_set,
     },
 };
 
@@ -20,7 +20,7 @@ use crate::{
 mod platform;
 use flux_rs::*;
 use libc::mode_t;
-pub use platform::*;
+// pub use platform::*;
 
 pub const LINEAR_MEM_SIZE: usize = 4294965096; //4GB
 
