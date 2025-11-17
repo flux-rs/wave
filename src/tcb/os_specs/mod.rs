@@ -27,43 +27,6 @@ pub use paste::paste;
 
 use super::path::HostPathSafe;
 
-#[macro_export]
-macro_rules! arg_converter {
-    ($arg:ident: (&RVec<NativeIoVecOk>)) => {
-        $arg.inner.as_ptr()
-    };
-    ($arg:ident: (&NativeIoVecs)) => {
-        $arg.iovs.as_ptr()
-    };
-    ($arg:ident: HostPathSafe) => {
-        $arg.inner.as_ptr()
-    };
-    ($arg:ident: (&SockAddr)) => {
-        &$arg.inner as *const libc::sockaddr_in
-    };
-    ($arg:ident: BSlice) => {
-        $arg.inner.as_ptr()
-    };
-    ($arg:ident: (&[$type:ty])) => {
-        $arg.as_ptr()
-    };
-    ($arg:ident: (&$type:ty)) => {
-        $arg as *const $type
-    };
-    ($arg:ident: (&mut [$type:ty])) => {
-        $arg.as_mut_ptr()
-    };
-    ($arg:ident: (&mut $type:ty)) => {
-        $arg as *mut $type
-    };
-    ($arg:ident: [$type:ty; $size:expr]) => {
-        $arg.as_ptr()
-    };
-    ($arg:ident: $type:ty) => {
-        $arg
-    };
-}
-
 trait SyscallArg {
     type Raw;
     fn into_raw(self) -> Self::Raw;

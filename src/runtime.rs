@@ -26,12 +26,12 @@ pub fn fresh_ctx(homedir: String) -> VmCtx {
     let mem = RVec::from_elem_n(0, memlen);
 
     let mut fdmap = FdMap::new();
-    fdmap.init_std_fds();
+    let _ = fdmap.init_std_fds();
     let homedir_host_fd = get_homedir_fd(&homedir) as usize;
     // let homedir_file = std::fs::File::open(&homedir).unwrap();
     // let homedir_fd = homedir_file.as_raw_fd();
     if homedir_host_fd >= 0 {
-        fdmap.create(HostFd::from_raw(homedir_host_fd));
+        let _ = fdmap.create(HostFd::from_raw(homedir_host_fd));
     }
     // Need to forget file to make sure it does not get auto-closed
     // when it gets out of scope

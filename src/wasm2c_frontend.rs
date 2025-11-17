@@ -41,11 +41,11 @@ pub fn create_ctx(
 ) -> VmCtx {
     let memlen = LINEAR_MEM_SIZE;
     let mut fdmap = FdMap::new();
-    fdmap.init_std_fds();
+    let _ = fdmap.init_std_fds();
     let homedir_file = std::fs::File::open(homedir).unwrap();
     let homedir_host_fd = homedir_file.as_raw_fd() as usize;
     if homedir_host_fd >= 0 {
-        fdmap.create(HostFd::from_raw(homedir_host_fd));
+        let _ = fdmap.create(HostFd::from_raw(homedir_host_fd));
     }
     // Need to forget file to make sure it does not get auto-closed
     // when it gets out of scope
