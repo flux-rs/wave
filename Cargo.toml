@@ -43,5 +43,5 @@ time_hostcalls = []
 [package.metadata.flux]
 enabled = true
 
-[workspace.lints.rust]
+[lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(flux)'] }

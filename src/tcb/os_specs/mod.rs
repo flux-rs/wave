@@ -3,19 +3,14 @@
 use crate::{iov::*, rvec::RVec};
 use crate::{
     rvec::{BSlice, RVec},
-    types::{NativeIoVec, NativeIoVecOk, SockAddr, VmCtx},
+    types::{NativeIoVecOk, SockAddr, VmCtx},
 };
-use libc::{c_int, mode_t, stat, timespec, AT_SYMLINK_FOLLOW, O_NOFOLLOW};
-// use crate::tcb::misc::flag_set;
-// use crate::tcb::sbox_mem::raw_ptr;
+use libc::{c_int, mode_t, AT_SYMLINK_FOLLOW, O_NOFOLLOW};
+
 // use crate::tcb::verifier::*;
 // use crate::types::NativeIoVec;
 // #[cfg(not(feature = "time_syscalls"))]
 use crate::verifier_interface::{push_syscall_result, start_timer, stop_timer};
-// use crate::{effect, effects, path_effect};
-// use prusti_contracts::*;
-use syscall::syscall;
-
 use flux_rs::*;
 // use wave_macros::{external_call, external_method, with_ghost_var};
 
@@ -77,9 +72,8 @@ macro_rules! syscall_spec_gen {
             #[flux_rs::trusted]
             #[$sig]
             pub fn [<os_ $name>]($($arg: $type),*) -> isize {
-                use $crate::arg_converter;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall::syscall!([<$name:upper>], $(arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall::syscall!([<$name:upper>], $($crate::arg_converter!($arg: $type)),*) as isize };
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;
@@ -91,9 +85,8 @@ macro_rules! syscall_spec_gen {
         paste! {
             #[flux_rs::trusted]
             pub fn [<os_ $name>]($($arg: $type),*) -> isize {
-                use $crate::arg_converter;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall::syscall!([<$name:upper>], $(arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall::syscall!([<$name:upper>], $($crate::arg_converter!($arg: $type)),*) as isize };
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;
@@ -153,9 +146,8 @@ macro_rules! syscall_spec_gen {
             #[flux_rs::trusted]
             #[$sig]
             pub fn [<os_ $name>](_cx: &VmCtx, $($arg: $type),*) -> isize {
-                use $crate::arg_converter;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall::syscall!([<$name:upper>], $(arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall::syscall!([<$name:upper>], $($crate::arg_converter!($arg: $type)),*) as isize };
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;
@@ -167,9 +159,8 @@ macro_rules! syscall_spec_gen {
         paste! {
             #[flux_rs::trusted]
             pub fn [<os_ $name>](_cx: &VmCtx, $($arg: $type),*) -> isize {
-                use $crate::arg_converter;
                 let __start_ts = start_timer();
-                let result = unsafe { syscall!([<$name:upper>], $(arg_converter!($arg: $type)),*) as isize };
+                let result = unsafe { syscall!([<$name:upper>], $($crate::arg_converter!($arg: $type)),*) as isize };
                 let __end_ts = stop_timer();
                 push_syscall_result(stringify!($name), __start_ts, __end_ts);
                 return result;

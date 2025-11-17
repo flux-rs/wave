@@ -5,7 +5,6 @@ use crate::types::*;
 // use prusti_contracts::*;
 use flux_rs::*;
 use std::os::unix::io::AsRawFd;
-use std::vec::Vec;
 // use wave_macros::with_ghost_var;
 
 ///////////////////////////////// Bitwise Ops /////////////////////////////////

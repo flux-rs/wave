@@ -17,7 +17,7 @@ use crate::types::*;
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
 pub fn trace_advise(
-    ctx: &VmCtx,
+    _ctx: &VmCtx,
     fd: HostFd,
     offset: i64,
     len: i64,
@@ -35,7 +35,7 @@ pub fn trace_advise(
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace))]
 pub fn trace_clock_get_time(
-    ctx: &VmCtx,
+    _ctx: &VmCtx,
     clock_id: libc::clockid_t,
     spec: &mut libc::timespec,
 ) -> RuntimeResult<usize> {
@@ -50,7 +50,7 @@ pub fn trace_clock_get_time(
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace))]
 pub fn trace_clock_get_res(
-    ctx: &VmCtx,
+    _ctx: &VmCtx,
     clock_id: libc::clockid_t,
     spec: &mut libc::timespec,
 ) -> RuntimeResult<usize> {
@@ -65,7 +65,7 @@ pub fn trace_clock_get_res(
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace))]
 pub fn trace_nanosleep(
-    ctx: &VmCtx,
+    _ctx: &VmCtx,
     req: &libc::timespec,
     rem: &mut libc::timespec,
 ) -> RuntimeResult<usize> {
@@ -79,7 +79,7 @@ pub fn trace_nanosleep(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-pub fn trace_allocate(ctx: &VmCtx, fd: HostFd, offset: i64, len: i64) -> RuntimeResult<usize> {
+pub fn trace_allocate(_ctx: &VmCtx, fd: HostFd, offset: i64, len: i64) -> RuntimeResult<usize> {
     let os_fd: usize = fd.to_raw();
     let r = os_fallocate(os_fd, 0, offset, len);
     RuntimeError::from_syscall_ret(r)

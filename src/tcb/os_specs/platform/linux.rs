@@ -20,8 +20,11 @@ use crate::verifier_interface::{push_syscall_result, start_timer, stop_timer};
 // use wave_macros::{external_call, external_method, with_ghost_var};
 use flux_rs::*;
 
-use libc::{c_int, stat, timespec, AT_SYMLINK_NOFOLLOW};
+use libc::{stat, timespec};
 use paste::paste;
+
+#[cfg(flux)]
+use libc::AT_SYMLINK_NOFOLLOW;
 
 //https://man7.org/linux/man-pages/man2/pread.2.html
 syscall_spec_gen! {

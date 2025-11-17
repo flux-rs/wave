@@ -1,6 +1,6 @@
 use std::path::{Component, Path, PathBuf};
 // use std::ffi::{OsStr, OsString};
-use std::ffi::{CStr, CString, OsStr, OsString};
+use std::ffi::{CString, OsStr, OsString};
 use std::io;
 use std::io::{Error, ErrorKind};
 use std::os::unix::ffi::{OsStrExt, OsStringExt};
@@ -108,7 +108,7 @@ impl OwnedComponents {
         self.inner.len()
     }
 
-    pub fn prefix(&self, end: usize) -> &OwnedComponents {
+    pub fn prefix(&self, _end: usize) -> &OwnedComponents {
         unimplemented!()
     }
 }

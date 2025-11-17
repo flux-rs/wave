@@ -1,19 +1,19 @@
 #![feature(proc_macro_diagnostic)]
 use proc_macro::TokenStream;
 use proc_macro2::Span;
-use quote::quote;
 use syn::fold::Fold;
 use syn::parse::{Parse, ParseStream, Result};
 //use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
 use syn::{
-    parse_macro_input, Attribute, Expr, ExprCall, ExprMethodCall, ExprPath, FnArg, Ident, ItemFn,
-    Meta, NestedMeta, Pat, Path, PathArguments, PathSegment, Signature, 
+    Attribute, Expr, ExprCall, ExprMethodCall, ExprPath, FnArg, Ident, Meta, NestedMeta, Pat, Path,
+    PathArguments, PathSegment, Signature,
 };
 
 /// Right now macro should be used like:
 /// #[with_extra_arg(trace: &mut Trace)]
 
+#[cfg_attr(not(feature = "enable"), allow(unused))]
 struct Args {
     decl: FnArg,
     var: Ident,
@@ -22,6 +22,7 @@ struct Args {
     external_methods: Vec<Ident>,
 }
 
+#[cfg_attr(not(feature = "enable"), allow(unused))]
 impl Args {
     fn decl(&self) -> FnArg {
         self.decl.clone()
@@ -263,7 +264,7 @@ pub fn with_ghost_var(args: TokenStream, input: TokenStream) -> TokenStream {
 // if extra_arg is disabled, make a noop
 #[cfg(not(feature = "enable"))]
 #[proc_macro_attribute]
-pub fn with_ghost_var(args: TokenStream, input: TokenStream) -> TokenStream {
+pub fn with_ghost_var(_args: TokenStream, input: TokenStream) -> TokenStream {
     input
 }
 

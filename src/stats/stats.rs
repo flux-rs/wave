@@ -1,6 +1,6 @@
 #![cfg_attr(flux, flux::ignore)]
 
-use crate::stats::timing::{ResultsType, HOSTCALL_RESULTS, SYSCALL_RESULTS};
+use crate::stats::timing::{HOSTCALL_RESULTS, SYSCALL_RESULTS};
 use statistical::mean;
 use statistical::univariate::geometric_mean;
 use std::fs::File;
@@ -21,7 +21,7 @@ pub fn output_hostcall_perf_results() {
             if !v.is_empty() {
                 let mean = mean(v);
                 let geomean = geometric_mean(v);
-                writeln!(f, "{:?},{:?},{:?},{:?}", k, v.len(), mean, geomean);
+                let _ = writeln!(f, "{:?},{:?},{:?},{:?}", k, v.len(), mean, geomean);
             }
         }
     });
@@ -35,7 +35,7 @@ pub fn output_syscall_perf_results() {
             if !v.is_empty() {
                 let mean = mean(v);
                 let geomean = geometric_mean(v);
-                writeln!(f, "{:?},{:?},{:?},{:?}", k, v.len(), mean, geomean);
+                let _ = writeln!(f, "{:?},{:?},{:?},{:?}", k, v.len(), mean, geomean);
             }
         }
     });

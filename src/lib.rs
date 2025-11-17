@@ -4,7 +4,7 @@
 mod fdmap;
 mod iov;
 pub mod lucet_frontend;
-mod os;
+pub mod os;
 mod path_resolution;
 mod poll;
 pub mod runtime;

@@ -3,7 +3,6 @@
 use core::arch::x86_64::{__cpuid_count, __rdtscp, _rdtsc};
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::thread;
 
 // name of hostcall -> Vec<nanoseconds>
 pub type ResultsType = HashMap<String, Vec<f64>>;

@@ -5,7 +5,7 @@ use crate::{rvec::RVec, tcb::path::HostPathSafe};
 use crate::tcb::os_specs::*;
 #[cfg(feature = "verify")]
 use crate::tcb::path::path_safe;
-use crate::tcb::path::{CountSafe, HostPath};
+use crate::tcb::path::CountSafe;
 // use crate::tcb::sbox_mem::{raw_ptr, valid_linmem};
 #[cfg(feature = "verify")]
 use crate::tcb::verifier::*;
@@ -64,7 +64,7 @@ pub fn trace_close(ctx: &VmCtx, fd: HostFd) -> Result<usize, RuntimeError> {
 // #[ensures(trace_safe(trace, ctx))]
 // read writes `cnt` bytes to sandbox memory
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess), effect!(WriteMem, addr, count)))]
-#[sig(fn (ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr)) -> Result<usize, RuntimeError>)]
+#[sig(fn(ctx: &mut VmCtx[@cx], fd: HostFd, ptr: SboxPtr, cnt: CountSafe(ptr)) -> Result<usize, RuntimeError>)]
 pub fn trace_read(
     ctx: &mut VmCtx,
     fd: HostFd,
@@ -304,7 +304,7 @@ pub fn trace_seek(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-pub fn trace_sync(ctx: &VmCtx, fd: HostFd) -> RuntimeResult<usize> {
+pub fn trace_sync(_ctx: &VmCtx, fd: HostFd) -> RuntimeResult<usize> {
     let os_fd: usize = fd.to_raw();
     let r = os_sync(os_fd);
     RuntimeError::from_syscall_ret(r)
@@ -316,7 +316,7 @@ pub fn trace_sync(ctx: &VmCtx, fd: HostFd) -> RuntimeResult<usize> {
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-pub fn trace_datasync(ctx: &VmCtx, fd: HostFd) -> Result<usize, RuntimeError> {
+pub fn trace_datasync(_ctx: &VmCtx, fd: HostFd) -> Result<usize, RuntimeError> {
     let os_fd: usize = fd.to_raw();
     let r = os_fdatasync(os_fd);
     RuntimeError::from_syscall_ret(r)
@@ -328,7 +328,7 @@ pub fn trace_datasync(ctx: &VmCtx, fd: HostFd) -> Result<usize, RuntimeError> {
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-pub fn trace_fstat(ctx: &VmCtx, fd: HostFd, stat: &mut libc::stat) -> Result<usize, RuntimeError> {
+pub fn trace_fstat(_ctx: &VmCtx, fd: HostFd, stat: &mut libc::stat) -> Result<usize, RuntimeError> {
     let os_fd: usize = fd.to_raw();
     let r = os_fstat(os_fd, stat);
     RuntimeError::from_syscall_ret(r)
@@ -361,7 +361,7 @@ pub fn trace_fstatat(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-pub fn trace_fgetfl(ctx: &VmCtx, fd: HostFd) -> Result<usize, RuntimeError> {
+pub fn trace_fgetfl(_ctx: &VmCtx, fd: HostFd) -> Result<usize, RuntimeError> {
     let os_fd: usize = fd.to_raw();
     let r = os_fcntl(os_fd, libc::F_GETFL, 0);
     RuntimeError::from_syscall_ret(r)
@@ -373,7 +373,7 @@ pub fn trace_fgetfl(ctx: &VmCtx, fd: HostFd) -> Result<usize, RuntimeError> {
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-pub fn trace_fsetfl(ctx: &VmCtx, fd: HostFd, flags: libc::c_int) -> RuntimeResult<usize> {
+pub fn trace_fsetfl(_ctx: &VmCtx, fd: HostFd, flags: libc::c_int) -> RuntimeResult<usize> {
     let os_fd: usize = fd.to_raw();
     let r = os_fcntl(os_fd, libc::F_SETFL, flags);
     RuntimeError::from_syscall_ret(r)
@@ -385,7 +385,7 @@ pub fn trace_fsetfl(ctx: &VmCtx, fd: HostFd, flags: libc::c_int) -> RuntimeResul
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-pub fn trace_ftruncate(ctx: &VmCtx, fd: HostFd, length: libc::off_t) -> RuntimeResult<usize> {
+pub fn trace_ftruncate(_ctx: &VmCtx, fd: HostFd, length: libc::off_t) -> RuntimeResult<usize> {
     let os_fd: usize = fd.to_raw();
     let r = os_ftruncate(os_fd, length);
     RuntimeError::from_syscall_ret(r)
@@ -544,7 +544,7 @@ pub fn trace_symlinkat(
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
 #[sig(fn (ctx: &VmCtx, fd: HostFd, specs: &RVec<timespec>{len: 2 <= len}) -> Result<usize, RuntimeError>)]
 pub fn trace_futimens(
-    ctx: &VmCtx,
+    _ctx: &VmCtx,
     fd: HostFd,
     specs: &RVec<timespec>,
 ) -> Result<usize, RuntimeError> {
@@ -649,7 +649,7 @@ pub fn trace_send(
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(Shutdown), effect!(FdAccess)))]
 
-pub fn trace_shutdown(ctx: &VmCtx, fd: HostFd, how: libc::c_int) -> RuntimeResult<usize> {
+pub fn trace_shutdown(_ctx: &VmCtx, fd: HostFd, how: libc::c_int) -> RuntimeResult<usize> {
     let os_fd: usize = fd.to_raw();
     let r = os_shutdown(os_fd, how);
     RuntimeError::from_syscall_ret(r)
@@ -662,7 +662,7 @@ pub fn trace_shutdown(ctx: &VmCtx, fd: HostFd, how: libc::c_int) -> RuntimeResul
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
 pub fn trace_poll(
-    ctx: &VmCtx,
+    _ctx: &VmCtx,
     pollfds: &mut RVec<libc::pollfd>,
     timeout: libc::c_int,
 ) -> RuntimeResult<usize> {
@@ -679,7 +679,7 @@ pub fn trace_poll(
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
 #[sig(fn (ctx: &VmCtx, fd: HostFd, dirp: &mut RVec<u8>[@capacity], count: usize{capacity >= count}) -> Result<usize, RuntimeError>)]
 pub fn trace_getdents64(
-    ctx: &VmCtx,
+    _ctx: &VmCtx,
     fd: HostFd,
     dirp: &mut RVec<u8>,
     count: usize,
@@ -699,7 +699,7 @@ pub fn trace_getdents64(
 
 #[sig(fn (ctx: &VmCtx, domain: i32, ty: i32, protocol: i32) -> Result<usize, RuntimeError> requires SockCreation(domain, ty))]
 pub fn trace_socket(
-    ctx: &VmCtx,
+    _ctx: &VmCtx,
     domain: i32,
     ty: i32,
     protocol: i32,
@@ -735,7 +735,7 @@ pub fn trace_connect(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace, effect!(FdAccess)))]
-pub fn trace_fionread(ctx: &VmCtx, sockfd: HostFd) -> RuntimeResult<usize> {
+pub fn trace_fionread(_ctx: &VmCtx, sockfd: HostFd) -> RuntimeResult<usize> {
     let os_fd: usize = sockfd.to_raw();
     let r = os_ioctl(os_fd, libc::FIONREAD);
     RuntimeError::from_syscall_ret(r)

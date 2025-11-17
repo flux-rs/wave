@@ -1,8 +1,11 @@
 use std::ptr::copy_nonoverlapping;
 
 use crate::rvec::{BSlice, RVec};
-use crate::types::{NativeIoVec, NativeIoVecOk, SboxPtr, VmCtx, WasmIoVec, LINEAR_MEM_SIZE};
+use crate::types::{NativeIoVec, NativeIoVecOk, SboxPtr, VmCtx, WasmIoVec};
 use flux_rs::*;
+
+#[cfg(flux)]
+use crate::types::LINEAR_MEM_SIZE;
 
 impl VmCtx {
     #[trusted]

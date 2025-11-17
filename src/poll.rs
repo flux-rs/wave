@@ -1,5 +1,4 @@
 // use crate::os::trace_fionread;
-use crate::runtime::*;
 #[cfg(feature = "verify")]
 use crate::tcb::verifier::external_specs::result::*;
 #[cfg(feature = "verify")]
@@ -9,7 +8,7 @@ use crate::wrappers::wasi_clock_time_get;
 use crate::{os::trace_fionread, rvec::RVec}; // TODO: remove this circular reference
                                              // use prusti_contracts::*;
 use flux_rs::*;
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 // use wave_macros::{external_calls, external_methods, with_ghost_var};
 use RuntimeError::*;
 
@@ -185,7 +184,7 @@ pub fn writeback_timeouts(
                     typ: EventType::Clock,
                     fd_readwrite: None,
                 };
-                event.write(ctx, out_ptr + event_offset as u32);
+                event.write(ctx, out_ptr + event_offset as u32)?;
                 num_events_written += 1;
             }
         }
@@ -259,7 +258,7 @@ pub fn writeback_fds(
             typ,
             fd_readwrite: Some(fd_readwrite),
         };
-        event.write(ctx, out_ptr + event_offset as u32);
+        event.write(ctx, out_ptr + event_offset as u32)?;
         num_events_written += 1;
 
         event_idx += 1;

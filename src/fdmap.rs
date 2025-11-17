@@ -44,9 +44,9 @@ impl FdMap {
         if (stdin_fd >= 0) && (stdout_fd >= 0) && (stderr_fd >= 0) {
             // upcasting i32 => usize is safe since we checked that it is positive
             // viper overflow checker would yell at us if this was not the case
-            self.create(HostFd::from_raw(stdin_fd as usize));
-            self.create(HostFd::from_raw(stdout_fd as usize));
-            self.create(HostFd::from_raw(stderr_fd as usize));
+            self.create(HostFd::from_raw(stdin_fd as usize))?;
+            self.create(HostFd::from_raw(stdout_fd as usize))?;
+            self.create(HostFd::from_raw(stderr_fd as usize))?;
             return Ok(());
         }
         Err(Emfile) // File descriptor failure
@@ -108,7 +108,7 @@ impl FdMap {
     // FLUX-TODO2 open-mut-ref
     #[sig(fn (self: &strg FdMap, k: SboxFdSafe) ensures self: FdMap)]
     pub fn delete(&mut self, k: SboxFdSafe) {
-        if let Ok(oldfd) = self.m[k as usize] {
+        if let Ok(_oldfd) = self.m[k as usize] {
             self.reserve.push(k);
         }
         self.m[k as usize] = Err(Ebadf);
