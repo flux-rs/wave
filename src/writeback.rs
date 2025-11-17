@@ -7,7 +7,7 @@ use crate::types::*;
 // #[with_ghost_var(trace: &mut Trace)]
 pub fn wasm2c_marshal<T>(res: RuntimeResult<T>) -> u32 {
     match res {
-        Ok(r) => 0,
+        Ok(_) => 0,
         Err(err) => err.into(),
     }
 }

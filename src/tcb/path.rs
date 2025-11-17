@@ -6,6 +6,7 @@ use crate::{rvec::RVec, types::HostFd};
 use flux_rs::*;
 
 #[cfg(flux)]
+#[expect(unused)]
 use crate::types::LINEAR_MEM_SIZE;
 
 const DEPTH_ERR: isize = i32::MIN as isize;

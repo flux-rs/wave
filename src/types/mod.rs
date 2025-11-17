@@ -20,7 +20,6 @@ use crate::{
 mod platform;
 use flux_rs::*;
 use libc::mode_t;
-// pub use platform::*;
 
 pub const LINEAR_MEM_SIZE: usize = 4294965096; //4GB
 

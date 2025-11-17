@@ -1,11 +1,11 @@
-use crate::os;
-use crate::runtime::fresh_ctx;
-use crate::tcb::os_specs::os_read;
+// use crate::os;
+// use crate::runtime::fresh_ctx;
+// use crate::tcb::os_specs::os_read;
 use crate::tcb::os_specs::*;
 // use crate::tcb::verifier::*;
 use crate::tests::init;
-use crate::types::{SboxPtr, VmCtx, LINEAR_MEM_SIZE};
-use quickcheck::{QuickCheck, TestResult};
+// use crate::types::{SboxPtr, VmCtx, LINEAR_MEM_SIZE};
+use quickcheck::TestResult;
 use quickcheck_macros;
 
 // FLUX-TODO: this uses `os_pread` with an arbitrary slice?

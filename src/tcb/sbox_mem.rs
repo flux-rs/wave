@@ -5,6 +5,7 @@ use crate::types::{NativeIoVec, NativeIoVecOk, SboxPtr, VmCtx, WasmIoVec};
 use flux_rs::*;
 
 #[cfg(flux)]
+#[expect(unused)]
 use crate::types::LINEAR_MEM_SIZE;
 
 impl VmCtx {

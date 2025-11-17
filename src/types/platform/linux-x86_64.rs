@@ -96,16 +96,16 @@ impl Dirent {
         ]);
 
         // Offset to next linux_dirent
-        let d_offset = u64::from_le_bytes([
-            host_buf[in_idx + 8],
-            host_buf[in_idx + 9],
-            host_buf[in_idx + 10],
-            host_buf[in_idx + 11],
-            host_buf[in_idx + 12],
-            host_buf[in_idx + 13],
-            host_buf[in_idx + 14],
-            host_buf[in_idx + 15],
-        ]);
+        // let d_offset = u64::from_le_bytes([
+        //     host_buf[in_idx + 8],
+        //     host_buf[in_idx + 9],
+        //     host_buf[in_idx + 10],
+        //     host_buf[in_idx + 11],
+        //     host_buf[in_idx + 12],
+        //     host_buf[in_idx + 13],
+        //     host_buf[in_idx + 14],
+        //     host_buf[in_idx + 15],
+        // ]);
 
         // File type
         let d_type = u8::from_le_bytes([host_buf[in_idx + 18]]);

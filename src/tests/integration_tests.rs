@@ -1,5 +1,3 @@
-#![cfg_attr(flux, flux::ignore)]
-
 use regex::Regex;
 use std::path::Path;
 use std::process::Command;
@@ -53,7 +51,7 @@ fn example_clock() {
 
 #[test]
 fn example_cp() {
-    let s = run_and_capture("examples/cp");
+    let _ = run_and_capture("examples/cp");
     assert!(Path::new("examples/cp/output/tmp.txt").exists());
     // assert!(s == "This is the contents of the file!\n");
 }
@@ -73,7 +71,7 @@ fn example_cp_and_insert() {
 // TODO: clean up?
 #[test]
 fn example_fallocate() {
-    let s = run_and_capture("examples/fallocate");
+    let _ = run_and_capture("examples/fallocate");
     assert!(Path::new("examples/fallocate/output/tmp.txt").exists());
     // assert!(s == "This is the contents of the file!\n");
 }
@@ -107,7 +105,7 @@ fn example_ls() {
 // TODO: cleanup
 #[test]
 fn example_mkdir() {
-    let s = run_and_capture("examples/mkdir");
+    let _ = run_and_capture("examples/mkdir");
     assert!(Path::new("examples/mkdir/test_dir").exists());
     // assert!(s == "This is the contents of the file!\n");
 }
@@ -135,7 +133,7 @@ fn example_print_args_and_environ() {
 
 #[test]
 fn example_raise() {
-    let s = run_and_capture("examples/raise");
+    let _ = run_and_capture("examples/raise");
     // all we expect is that it doesn't crash
 }
 
@@ -169,7 +167,7 @@ fn example_renumber() {
 // TODO: set up
 #[test]
 fn example_rmdir() {
-    let s = run_and_capture("examples/rmdir");
+    let _ = run_and_capture("examples/rmdir");
     assert!(!Path::new("examples/rmdir/remove_me").exists());
     // assert!(s == "This is the contents of the file!\n");
 }

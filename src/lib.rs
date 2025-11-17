@@ -11,14 +11,16 @@ pub mod runtime;
 pub mod rvec;
 pub mod stats;
 pub mod tcb;
+#[cfg(test)]
 mod tests;
 pub mod types;
 pub mod verifier_interface;
 pub mod wasm2c_frontend;
-mod wrappers;
+pub mod wrappers;
 mod writeback;
 
 #[cfg(flux)]
+#[expect(unused)]
 use types::{AF_INET, LINEAR_MEM_SIZE, SOCK_DGRAM, SOCK_STREAM};
 
 flux_rs::defs! {

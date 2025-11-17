@@ -212,7 +212,7 @@ pub fn wasi_fd_allocate(ctx: &VmCtx, v_fd: u32, offset: u64, len: u64) -> Runtim
 // #[ensures(trace_safe(trace, ctx))]
 pub fn wasi_fd_sync(ctx: &VmCtx, v_fd: u32) -> RuntimeResult<()> {
     let fd = ctx.fdmap.fd_to_native(v_fd)?;
-    let ret = trace_sync(ctx, fd)?;
+    let _ = trace_sync(ctx, fd)?;
     Ok(())
 }
 
@@ -240,7 +240,7 @@ pub fn wasi_fd_datasync(ctx: &VmCtx, v_fd: u32) -> RuntimeResult<u32> {
 pub fn wasi_fd_fdstat_get(ctx: &VmCtx, v_fd: u32) -> RuntimeResult<FdStat> {
     let fd = ctx.fdmap.fd_to_native(v_fd)?;
     let mut stat = fresh_stat();
-    let result = trace_fstat(ctx, fd, &mut stat)?;
+    let _ = trace_fstat(ctx, fd, &mut stat)?;
     let filetype = stat.st_mode;
 
     let mode_flags = trace_fgetfl(ctx, fd)?;
@@ -272,7 +272,7 @@ pub fn wasi_fd_fdstat_set_flags(
     let fd = ctx.fdmap.fd_to_native(v_fd)?;
 
     let posix_flags = flags.to_posix();
-    let ret = trace_fsetfl(ctx, fd, posix_flags)?;
+    let _ = trace_fsetfl(ctx, fd, posix_flags)?;
     Ok(())
 }
 
@@ -287,7 +287,7 @@ pub fn wasi_fd_fdstat_set_flags(
 pub fn wasi_fd_filestat_get(ctx: &VmCtx, v_fd: u32) -> RuntimeResult<FileStat> {
     let fd = ctx.fdmap.fd_to_native(v_fd)?;
     let mut stat = fresh_stat();
-    let filetype = trace_fstat(ctx, fd, &mut stat)?;
+    let _ = trace_fstat(ctx, fd, &mut stat)?;
     Ok(stat.into())
 }
 
@@ -303,7 +303,7 @@ pub fn wasi_fd_filestat_get(ctx: &VmCtx, v_fd: u32) -> RuntimeResult<FileStat> {
 // #[ensures(trace_safe(trace, ctx))]
 pub fn wasi_fd_filestat_set_size(ctx: &VmCtx, v_fd: u32, size: i64) -> RuntimeResult<()> {
     let fd = ctx.fdmap.fd_to_native(v_fd)?;
-    let ret = trace_ftruncate(ctx, fd, size)?;
+    let _ = trace_ftruncate(ctx, fd, size)?;
     Ok(())
 }
 
@@ -336,7 +336,7 @@ pub fn wasi_fd_filestat_set_times(
     specs.push(atim_spec);
     specs.push(mtim_spec);
 
-    let res = trace_futimens(ctx, fd, &specs)?;
+    let _ = trace_futimens(ctx, fd, &specs)?;
     Ok(())
 }
 
@@ -375,7 +375,7 @@ pub fn wasi_prestat_dirname(
     ctx: &mut VmCtx,
     v_fd: u32,
     path: u32,
-    path_len: u32,
+    _path_len: u32,
 ) -> RuntimeResult<()> {
     if v_fd >= MAX_SBOX_FDS {
         return Err(Ebadf);
@@ -458,7 +458,7 @@ pub fn wasi_path_create_directory(
     unwrap_result!(host_pathname);
     // wasi doesn't specify what permissions should be
     // We use rw------- cause it seems sane.
-    let res = trace_mkdirat(ctx, fd, host_pathname, 0o766)?;
+    let _ = trace_mkdirat(ctx, fd, host_pathname, 0o766)?;
     Ok(())
 }
 
@@ -479,7 +479,7 @@ pub fn wasi_path_filestat_get(
     path_len: u32,
 ) -> RuntimeResult<FileStat> {
     let flags = LookupFlags::new(flags);
-    let fd = ctx.fdmap.fd_to_native(v_fd)?;
+    let _ = ctx.fdmap.fd_to_native(v_fd)?;
     if v_fd != HOMEDIR_FD {
         return Err(Enotcapable);
     }
@@ -502,7 +502,7 @@ pub fn wasi_path_filestat_get(
         return Err(Einval);
     }
 
-    let res = trace_fstatat(ctx, fd, host_pathname, &mut stat, n_flags)?;
+    let _ = trace_fstatat(ctx, fd, host_pathname, &mut stat, n_flags)?;
     Ok(stat.into())
 }
 
@@ -562,7 +562,7 @@ pub fn wasi_path_filestat_set_times(
         return Err(Einval);
     }
 
-    let res = trace_utimensat(ctx, fd, host_pathname, &specs, n_flags)?;
+    let _ = trace_utimensat(ctx, fd, host_pathname, &specs, n_flags)?;
 
     Ok(())
 }
@@ -620,7 +620,7 @@ pub fn wasi_path_link(
         return Err(Einval);
     }
 
-    let res = trace_linkat(
+    let _ = trace_linkat(
         ctx,
         old_fd,
         old_host_pathname,
@@ -738,7 +738,7 @@ pub fn wasi_path_rename(
     let new_host_pathname = ctx.translate_path(new_pathname, new_path_len, false, new_fd);
     unwrap_result!(new_host_pathname);
 
-    let res = trace_renameat(ctx, old_fd, old_host_pathname, new_fd, new_host_pathname)?;
+    let _ = trace_renameat(ctx, old_fd, old_host_pathname, new_fd, new_host_pathname)?;
     Ok(())
 }
 
@@ -771,7 +771,7 @@ pub fn wasi_path_symlink(
     let new_host_pathname = ctx.translate_path(new_pathname, new_path_len, true, fd);
     unwrap_result!(new_host_pathname);
 
-    let res = trace_symlinkat(ctx, old_host_pathname, fd, new_host_pathname)?;
+    let _ = trace_symlinkat(ctx, old_host_pathname, fd, new_host_pathname)?;
     Ok(())
 }
 
@@ -799,7 +799,7 @@ pub fn wasi_path_unlink_file(
     let host_pathname = ctx.translate_path(pathname, path_len, false, fd);
     unwrap_result!(host_pathname);
 
-    let res = trace_unlinkat(ctx, fd, host_pathname, 0)?;
+    let _ = trace_unlinkat(ctx, fd, host_pathname, 0)?;
     Ok(())
 }
 
@@ -815,7 +815,7 @@ pub fn wasi_clock_res_get(ctx: &VmCtx, clock_id: u32) -> RuntimeResult<Timestamp
     let id = ClockId::try_from(clock_id)?;
     let mut spec = fresh_libc_timespec();
 
-    let ret = trace_clock_get_res(ctx, id.into(), &mut spec)?;
+    let _ = trace_clock_get_res(ctx, id.into(), &mut spec)?;
     Ok(spec.into())
 }
 
@@ -835,7 +835,7 @@ pub fn wasi_clock_time_get(
     let id = ClockId::try_from(clock_id)?;
     let mut spec = fresh_libc_timespec();
 
-    let ret = trace_clock_get_time(ctx, id.into(), &mut spec)?;
+    let _ = trace_clock_get_time(ctx, id.into(), &mut spec)?;
     Ok(spec.into())
 }
 
@@ -846,7 +846,7 @@ pub fn wasi_clock_time_get(
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace))]
-pub fn wasi_proc_exit(ctx: &VmCtx, rval: u32) -> RuntimeResult<()> {
+pub fn wasi_proc_exit(_ctx: &VmCtx, _rval: u32) -> RuntimeResult<()> {
     Ok(())
 }
 
@@ -857,7 +857,7 @@ pub fn wasi_proc_exit(ctx: &VmCtx, rval: u32) -> RuntimeResult<()> {
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace))]
-pub fn wasi_proc_raise(ctx: &VmCtx, signal: u32) -> RuntimeResult<()> {
+pub fn wasi_proc_raise(_ctx: &VmCtx, _signal: u32) -> RuntimeResult<()> {
     Ok(())
 }
 
@@ -868,7 +868,7 @@ pub fn wasi_proc_raise(ctx: &VmCtx, signal: u32) -> RuntimeResult<()> {
 // #[ensures(ctx_safe(ctx))]
 // #[ensures(trace_safe(trace, ctx))]
 // #[ensures(effects!(old(trace), trace))]
-pub fn wasi_sched_yield(ctx: &VmCtx) -> RuntimeResult<()> {
+pub fn wasi_sched_yield(_ctx: &VmCtx) -> RuntimeResult<()> {
     Ok(())
 }
 
@@ -886,7 +886,7 @@ pub fn wasi_random_get(ctx: &mut VmCtx, ptr: u32, len: u32) -> Result<(), Runtim
         return Err(Efault);
     }
 
-    let res = trace_getrandom(ctx, ptr, len as usize, 0)?;
+    let _ = trace_getrandom(ctx, ptr, len as usize, 0)?;
     Ok(())
 }
 
@@ -1083,7 +1083,7 @@ pub fn wasi_sock_send(
     v_fd: u32,
     si_data: u32,
     si_data_count: u32,
-    si_flags: u32,
+    _si_flags: u32,
 ) -> Result<u32, RuntimeError> {
     let fd = ctx.fdmap.fd_to_native(v_fd)?;
 
@@ -1124,7 +1124,7 @@ pub fn wasi_sock_shutdown(ctx: &VmCtx, v_fd: u32, v_how: u32) -> Result<(), Runt
     let how = SdFlags::new(v_how);
     let posix_how = TryFrom::try_from(how)?; // how.try_into()?;
 
-    let res = trace_shutdown(ctx, fd, posix_how)?;
+    let _ = trace_shutdown(ctx, fd, posix_how)?;
     Ok(())
 }
 
@@ -1233,7 +1233,7 @@ pub fn wasi_fd_readdir(
     // FLUX host_buf.reserve_exact(buf_len as usize);
     let mut host_buf: RVec<u8> = RVec::from_elem_n(0, buf_len);
 
-    let res = trace_getdents64(ctx, fd, &mut host_buf, buf_len)?;
+    let _ = trace_getdents64(ctx, fd, &mut host_buf, buf_len)?;
 
     // the number of entries we have read so far. If less than cookie, don't output the directory
     let mut entry_idx = 0;
@@ -1403,6 +1403,6 @@ pub fn wasi_sock_connect(
         return Err(Enotcapable);
     }
 
-    let res = trace_connect(ctx, fd, &saddr, addrlen)?;
+    let _ = trace_connect(ctx, fd, &saddr, addrlen)?;
     Ok(())
 }

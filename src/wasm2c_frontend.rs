@@ -3,12 +3,9 @@ use crate::tcb::ffi::*;
 use crate::types::*;
 use crate::wrappers::*;
 use crate::writeback::*;
-use libc::{c_char, strlen};
-use std::ffi::CStr;
+use libc::c_char;
 use std::os::unix::io::AsRawFd;
-use std::time::Instant;
 use trace::trace;
-use RuntimeError::*;
 // use log::{debug, error, log_enabled, info, Level};
 use env_logger;
 use log;
@@ -100,7 +97,7 @@ fn to_raw(mem: &Vec<u8>) -> usize {
 #[trusted]
 fn ctx_from_memptr(
     memptr: *mut u8,
-    memsize: isize,
+    _memsize: isize,
     homedir: *const c_char,
     args: *mut u8,
     argc: usize,
@@ -110,8 +107,8 @@ fn ctx_from_memptr(
     netlist: *const Netlist,
 ) -> VmCtx {
     let netlist = transmut_netlist(netlist);
-    let log_path = ffi_load_cstr(log_path).to_owned().clone();
-    let homedir = &(*ffi_load_cstr(homedir).clone()); // Actually copy the inner string
+    let _ = ffi_load_cstr(log_path).to_owned().clone();
+    let homedir = &*ffi_load_cstr(homedir); // Actually copy the inner string
 
     let arg_buffer = ffi_load_cstr_as_vec(args).clone();
     let env_buffer = ffi_load_cstr_as_vec(env).clone();
@@ -143,7 +140,7 @@ pub extern "C" fn wave_init(
 
 #[no_mangle]
 #[trusted]
-pub extern "C" fn wave_cleanup(ctx: *const *mut VmCtx) {
+pub extern "C" fn wave_cleanup(_ctx: *const *mut VmCtx) {
     output_hostcall_perf_results();
     output_syscall_perf_results();
 }
@@ -183,8 +180,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_args_sizes_getZ_iii(
 
 // TODO: this needs to invoke the cleanup function
 #[no_mangle]
-#[trace(logging)]
-pub extern "C" fn Z_wasi_snapshot_preview1Z_proc_exitZ_vi(ctx: *const *mut VmCtx, x: u32) {
+pub extern "C" fn Z_wasi_snapshot_preview1Z_proc_exitZ_vi(_ctx: *const *mut VmCtx, x: u32) {
     std::process::exit(x as i32);
     // let start = start_timer();
     //let ctx_ref = ptr_to_ref(ctx);
@@ -432,12 +428,11 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_fdstat_set_flagsZ_iii(
 
 // Not supporting this because rights are getting removed
 #[no_mangle]
-#[trace(logging)]
 pub extern "C" fn _Z_wasi_snapshot_preview1Z_fd_fdstat_set_rightsZ_iijj(
-    ctx: *const *mut VmCtx,
-    a: u32,
-    b: u64,
-    c: u64,
+    _ctx: *const *mut VmCtx,
+    _a: u32,
+    _b: u64,
+    _c: u64,
 ) -> u32 {
     unimplemented!()
 }

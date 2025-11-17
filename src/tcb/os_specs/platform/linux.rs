@@ -24,6 +24,7 @@ use libc::{stat, timespec};
 use paste::paste;
 
 #[cfg(flux)]
+#[expect(unused)]
 use libc::AT_SYMLINK_NOFOLLOW;
 
 //https://man7.org/linux/man-pages/man2/pread.2.html

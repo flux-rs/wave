@@ -8,6 +8,7 @@ use crate::{
 use libc::{c_int, mode_t};
 
 #[cfg(flux)]
+#[expect(unused)]
 use libc::{AT_SYMLINK_FOLLOW, O_NOFOLLOW};
 
 // use crate::tcb::verifier::*;
