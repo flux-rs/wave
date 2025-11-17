@@ -5,10 +5,8 @@ use crate::wrappers::*;
 use crate::writeback::*;
 use libc::c_char;
 use std::os::unix::io::AsRawFd;
-use trace::trace;
 // use log::{debug, error, log_enabled, info, Level};
 use env_logger;
-use log;
 
 // When we are not timing syscalls, disable time syscalls
 // TODO: clean this up somehow
@@ -116,8 +114,7 @@ fn ctx_from_memptr(
     create_ctx(memptr, homedir, arg_buffer, argc, env_buffer, envc, netlist)
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn wave_init(
     memptr: *mut u8,
     memsize: isize,
@@ -138,15 +135,14 @@ pub extern "C" fn wave_init(
     Box::into_raw(Box::new(ctx))
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[trusted]
 pub extern "C" fn wave_cleanup(_ctx: *const *mut VmCtx) {
     output_hostcall_perf_results();
     output_syscall_perf_results();
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_args_getZ_iii(
     ctx: *const *mut VmCtx,
     argv: u32,
@@ -161,8 +157,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_args_getZ_iii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_args_sizes_getZ_iii(
     ctx: *const *mut VmCtx,
     pargc: u32,
@@ -179,7 +174,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_args_sizes_getZ_iii(
 }
 
 // TODO: this needs to invoke the cleanup function
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_proc_exitZ_vi(_ctx: *const *mut VmCtx, x: u32) {
     std::process::exit(x as i32);
     // let start = start_timer();
@@ -187,8 +182,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_proc_exitZ_vi(_ctx: *const *mut VmCt
     // wasi_proc_exit(ctx_ref, x);
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_environ_sizes_getZ_iii(
     ctx: *const *mut VmCtx,
     pcount: u32,
@@ -204,8 +198,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_environ_sizes_getZ_iii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_environ_getZ_iii(
     ctx: *const *mut VmCtx,
     __environ: u32,
@@ -220,8 +213,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_environ_getZ_iii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_prestat_getZ_iii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -237,8 +229,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_prestat_getZ_iii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_writeZ_iiiii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -255,8 +246,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_writeZ_iiiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_readZ_iiiii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -273,8 +263,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_readZ_iiiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_closeZ_ii(ctx: *const *mut VmCtx, fd: u32) -> u32 {
     let start = start_timer();
     let ctx_ref = ptr_to_ref(ctx);
@@ -285,8 +274,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_closeZ_ii(ctx: *const *mut VmCtx,
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_seekZ_iijii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -303,12 +291,11 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_seekZ_iijii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_clock_time_getZ_iiji(
     ctx: *const *mut VmCtx,
     clock_id: u32,
-    precision: u64,
+    _precision: u64,
     out: u32,
 ) -> u32 {
     let start = start_timer();
@@ -320,8 +307,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_clock_time_getZ_iiji(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_clock_res_getZ_iii(
     ctx: *const *mut VmCtx,
     clock_id: u32,
@@ -344,8 +330,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_clock_res_getZ_iii(
 Wasi API that is not currently supported by wasm2c
 */
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_adviseZ_iijji(
     ctx: *const *mut VmCtx,
     v_fd: u32,
@@ -362,8 +347,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_adviseZ_iijji(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_allocateZ_iijj(
     ctx: *const *mut VmCtx,
     v_fd: u32,
@@ -379,8 +363,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_allocateZ_iijj(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_datasyncZ_ii(
     ctx: *const *mut VmCtx,
     v_fd: u32,
@@ -394,8 +377,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_datasyncZ_ii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_fdstat_getZ_iii(
     ctx: *const *mut VmCtx,
     v_fd: u32,
@@ -410,8 +392,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_fdstat_getZ_iii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_fdstat_set_flagsZ_iii(
     ctx: *const *mut VmCtx,
     v_fd: u32,
@@ -427,7 +408,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_fdstat_set_flagsZ_iii(
 }
 
 // Not supporting this because rights are getting removed
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn _Z_wasi_snapshot_preview1Z_fd_fdstat_set_rightsZ_iijj(
     _ctx: *const *mut VmCtx,
     _a: u32,
@@ -437,8 +418,7 @@ pub extern "C" fn _Z_wasi_snapshot_preview1Z_fd_fdstat_set_rightsZ_iijj(
     unimplemented!()
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_filestat_getZ_iii(
     ctx: *const *mut VmCtx,
     v_fd: u32,
@@ -453,8 +433,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_filestat_getZ_iii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_filestat_set_sizeZ_iij(
     ctx: *const *mut VmCtx,
     v_fd: u32,
@@ -469,8 +448,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_filestat_set_sizeZ_iij(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_filestat_set_timesZ_iijji(
     ctx: *const *mut VmCtx,
     v_fd: u32,
@@ -487,8 +465,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_filestat_set_timesZ_iijji(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_preadZ_iiiiji(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -506,8 +483,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_preadZ_iiiiji(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_prestat_dir_nameZ_iiii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -523,8 +499,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_prestat_dir_nameZ_iiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_pwriteZ_iiiiji(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -542,8 +517,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_pwriteZ_iiiiji(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_readdirZ_iiiiji(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -561,8 +535,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_readdirZ_iiiiji(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_renumberZ_iii(
     ctx: *const *mut VmCtx,
     from: u32,
@@ -577,8 +550,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_renumberZ_iii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_syncZ_ii(ctx: *const *mut VmCtx, fd: u32) -> u32 {
     let start = start_timer();
     let ctx_ref = ptr_to_ref(ctx);
@@ -589,8 +561,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_syncZ_ii(ctx: *const *mut VmCtx, 
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_tellZ_iii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -605,8 +576,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_fd_tellZ_iii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_path_create_directoryZ_iiii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -623,8 +593,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_path_create_directoryZ_iiii(
 }
 
 // wasi libc truncates result to 16 bits ???
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_path_filestat_getZ_iiiiii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -642,8 +611,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_path_filestat_getZ_iiiiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_path_filestat_set_timesZ_iiiiijji(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -663,8 +631,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_path_filestat_set_timesZ_iiiiijji(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_path_linkZ_iiiiiiii(
     ctx: *const *mut VmCtx,
     old_fd: u32,
@@ -705,8 +672,7 @@ fn adjust_oflags(oflags: u32, fs_rights_base: u64) -> u32 {
     oflags
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_path_openZ_iiiiiijjii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -739,8 +705,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_path_openZ_iiiiiijjii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_path_readlinkZ_iiiiiii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -759,8 +724,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_path_readlinkZ_iiiiiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 // Pass through path_len
 pub extern "C" fn Z_wasi_snapshot_preview1Z_path_remove_directoryZ_iiii(
     ctx: *const *mut VmCtx,
@@ -777,8 +741,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_path_remove_directoryZ_iiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_path_renameZ_iiiiiii(
     ctx: *const *mut VmCtx,
     old_fd: u32,
@@ -805,8 +768,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_path_renameZ_iiiiiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_path_symlinkZ_iiiiii(
     ctx: *const *mut VmCtx,
     old_path: u32,
@@ -824,8 +786,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_path_symlinkZ_iiiiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_path_unlink_fileZ_iiii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -841,8 +802,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_path_unlink_fileZ_iiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_poll_oneoffZ_iiiii(
     ctx: *const *mut VmCtx,
     in_ptr: u32,
@@ -859,8 +819,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_poll_oneoffZ_iiiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_proc_raiseZ_ii(
     ctx: *const *mut VmCtx,
     signal: u32,
@@ -874,8 +833,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_proc_raiseZ_ii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_random_getZ_iii(
     ctx: *const *mut VmCtx,
     buf: u32,
@@ -890,8 +848,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_random_getZ_iii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_sched_yieldZ_iv(ctx: *const *mut VmCtx) -> u32 {
     let start = start_timer();
     let ctx_ref = ptr_to_ref(ctx);
@@ -902,8 +859,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_sched_yieldZ_iv(ctx: *const *mut VmC
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_sock_recvZ_iiiiiii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -922,8 +878,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_sock_recvZ_iiiiiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_sock_sendZ_iiiiii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -941,8 +896,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_sock_sendZ_iiiiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_sock_shutdownZ_iii(
     ctx: *const *mut VmCtx,
     fd: u32,
@@ -961,8 +915,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_sock_shutdownZ_iii(
  New Calls
 */
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_socketZ_iiiii(
     ctx: *const *mut VmCtx,
     domain: u32,
@@ -979,8 +932,7 @@ pub extern "C" fn Z_wasi_snapshot_preview1Z_socketZ_iiiii(
     retval
 }
 
-#[no_mangle]
-#[trace(logging)]
+#[unsafe(no_mangle)]
 pub extern "C" fn Z_wasi_snapshot_preview1Z_sock_connectZ_iiii(
     ctx: *const *mut VmCtx,
     sockfd: u32,
